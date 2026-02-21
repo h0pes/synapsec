@@ -1244,32 +1244,51 @@ CREATE INDEX idx_users_email ON users(email);
 -- ============================================================
 
 CREATE TABLE applications (
-    id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    app_name                VARCHAR(255) NOT NULL,
-    app_code                VARCHAR(10) NOT NULL UNIQUE,
-    description             TEXT,
-    criticality             asset_criticality NOT NULL DEFAULT 'Medium',
-    tier                    asset_tier NOT NULL DEFAULT 'Tier_2',
-    business_unit           VARCHAR(255),
-    business_owner          VARCHAR(255),
-    technical_owner         VARCHAR(255),
-    security_champion       VARCHAR(255),
-    technology_stack        JSONB DEFAULT '[]'::JSONB,
-    deployment_environment  JSONB DEFAULT '[]'::JSONB,
-    exposure                exposure_level,
-    data_classification     data_classification,
-    regulatory_scope        JSONB DEFAULT '[]'::JSONB,
-    repository_urls         JSONB DEFAULT '[]'::JSONB,
-    scanner_project_ids     JSONB DEFAULT '{}'::JSONB,
-    status                  app_status NOT NULL DEFAULT 'Active',
-    is_verified             BOOLEAN NOT NULL DEFAULT true,
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    app_name                    VARCHAR(255) NOT NULL,
+    app_code                    VARCHAR(10) NOT NULL UNIQUE,
+    description                 TEXT,
+    criticality                 asset_criticality DEFAULT 'Medium',
+    tier                        asset_tier NOT NULL DEFAULT 'Tier_2',
+    business_unit               VARCHAR(255),
+    business_owner              VARCHAR(255),
+    technical_owner             VARCHAR(255),
+    security_champion           VARCHAR(255),
+    technology_stack            JSONB DEFAULT '[]'::JSONB,
+    deployment_environment      JSONB DEFAULT '[]'::JSONB,
+    exposure                    exposure_level,
+    data_classification         data_classification,
+    regulatory_scope            JSONB DEFAULT '[]'::JSONB,
+    repository_urls             JSONB DEFAULT '[]'::JSONB,
+    scanner_project_ids         JSONB DEFAULT '{}'::JSONB,
+    status                      app_status NOT NULL DEFAULT 'Active',
+    is_verified                 BOOLEAN NOT NULL DEFAULT true,
+
+    -- Corporate APM enrichment (Section 2.3 of design doc)
+    ssa_code                    VARCHAR(50),
+    ssa_name                    VARCHAR(255),
+    functional_reference_email  VARCHAR(255),
+    technical_reference_email   VARCHAR(255),
+    effective_office_owner      VARCHAR(255),
+    effective_office_name       VARCHAR(255),
+    confidentiality_level       VARCHAR(50),
+    integrity_level             VARCHAR(50),
+    availability_level          VARCHAR(50),
+    is_dora_fei                 BOOLEAN DEFAULT false,
+    is_gdpr_subject             BOOLEAN DEFAULT false,
+    has_pci_data                BOOLEAN DEFAULT false,
+    is_psd2_relevant            BOOLEAN DEFAULT false,
+    apm_metadata                JSONB DEFAULT '{}'::JSONB,
+
+    created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_applications_app_code ON applications(app_code);
 CREATE INDEX idx_applications_status ON applications(status);
 CREATE INDEX idx_applications_criticality ON applications(criticality);
+CREATE INDEX idx_applications_ssa_code ON applications(ssa_code);
+CREATE INDEX idx_applications_is_verified ON applications(is_verified) WHERE NOT is_verified;
 
 -- ============================================================
 -- FINDINGS TABLE (Core Layer)
@@ -2182,6 +2201,7 @@ git commit -m "feat: add authentication with argon2id, JWT, account lockout, RBA
 - Create: `backend/src/services/application.rs`
 - Create: `backend/src/routes/applications.rs`
 - Create: `backend/tests/api/applications_test.rs`
+- Create: `backend/tests/fixtures/apm_sample.csv`
 
 **Step 1: Write failing tests**
 
@@ -2195,7 +2215,15 @@ Tests:
 - Create stub application (is_verified = false) → 201
 - List unverified applications → 200 (filtered)
 - Import applications from JSON → 201 with count
-- Only Platform_Admin and AppSec_Manager can create/update applications
+- Import applications from corporate APM CSV → 201 with count (~5000 records)
+- APM CSV import resolves Struttura Reale ownership override correctly
+- APM CSV import sets criticality fallback to Medium when ACRONYM CRITICALITY is empty
+- APM CSV import maps regulatory flags (DORA FEI, GDPR, PCI, PSD2)
+- APM CSV import stores full record in apm_metadata JSONB
+- APM CSV import is repeatable (update existing by app_code, insert new)
+- Filter applications by regulatory flag (is_dora_fei, is_gdpr_subject, etc.)
+- Filter applications by SSA code
+- Only Platform_Admin and AppSec_Manager can create/update/import applications
 
 **Step 2: Implement application service**
 
@@ -2207,6 +2235,37 @@ Key functions:
 - `list(filters: ApplicationFilters, pagination: Pagination) -> Result<PagedResult<Application>>`
 - `update(id: Uuid, update: UpdateApplication) -> Result<Application>`
 - `import_bulk(apps: Vec<CreateApplication>) -> Result<ImportResult>`
+- `import_apm_csv(data: &[u8], field_mapping: &ApmFieldMapping) -> Result<ApmImportResult>`
+
+The `import_apm_csv` function:
+1. Parse CSV with configurable field mapping (CSV column name → SynApSec field)
+2. For each row:
+   a. Extract `app_code` from CODICE ACRONIMO column
+   b. Map dedicated columns (SSA, CIA levels, regulatory flags, references)
+   c. Apply Struttura Reale ownership override logic:
+      - If STRUTTURA REALE DI GESTIONE fields populated AND differ from UFFICIO/SERVIZIO/DIREZIONE → use Struttura Reale's RESPONSABILE as effective_office_owner
+      - Else → use RESPONSABILE UFFICIO as effective_office_owner
+   d. Map criticality from ACRONYM CRITICALITY (SYNTHESIS LEVEL) to asset_criticality enum; default "Medium" if empty
+   e. Store entire CSV row as JSON in apm_metadata
+   f. Upsert by app_code (update if exists, insert if new)
+3. Return summary: total, created, updated, skipped, errors
+
+The `ApmFieldMapping` struct allows configurable CSV-to-field mapping:
+```rust
+pub struct ApmFieldMapping {
+    pub app_code_column: String,           // default: "CODICE ACRONIMO"
+    pub app_name_column: String,           // default: "DESCRIZIONE ACRONIMO"
+    pub ssa_code_column: String,           // default: "CODICE SSA"
+    pub criticality_column: String,        // default: "ACRONYM CRITICALITY (SYNTHESIS LEVEL)"
+    pub functional_ref_email_column: String,
+    pub technical_ref_email_column: String,
+    pub office_owner_column: String,       // default: "RESPONSABILE UFFICIO NOMINATIVO"
+    pub struttura_reale_owner_column: String, // default: "RESPONSABILE STRUTTURA REALE DI GESTIONE"
+    // ... additional mappings as needed
+}
+```
+
+Default mapping is provided; users can override via the import UI or API.
 
 **Step 3: Implement routes**
 
@@ -2217,6 +2276,7 @@ GET    /api/v1/applications/:id          → Get by ID
 PUT    /api/v1/applications/:id          → Update
 GET    /api/v1/applications/code/:code   → Get by app_code
 POST   /api/v1/applications/import       → Bulk import (JSON)
+POST   /api/v1/applications/import/apm   → Corporate APM CSV/Excel import (multipart)
 GET    /api/v1/applications/unverified   → List unverified stubs
 ```
 
@@ -2225,7 +2285,7 @@ GET    /api/v1/applications/unverified   → List unverified stubs
 ```bash
 cd backend && cargo test
 git add backend/src/services/application.rs backend/src/routes/applications.rs backend/tests/
-git commit -m "feat: add application registry CRUD with app_code lookup and bulk import"
+git commit -m "feat: add application registry CRUD with APM import, ownership override, and bulk operations"
 ```
 
 ---

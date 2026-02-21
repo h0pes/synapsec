@@ -1,8 +1,8 @@
 # SynApSec PRD Refinement — Design Document
 
-**Date:** 2026-02-19
+**Date:** 2026-02-19 (updated 2026-02-21)
 **Status:** Approved
-**Context:** Collaborative refinement of ASOC_PRD_v1.md through 30 design decisions
+**Context:** Collaborative refinement of ASOC_PRD_v1.md through 33 design decisions
 
 ---
 
@@ -52,7 +52,53 @@ The corporate acronym (`app_code`, 4 letters + 1 digit) is the universal applica
 
 This resolves PRD Open Question Q6. Zero findings are lost; unmapped applications surface in a dedicated analyst queue.
 
-### 2.3 Asset Criticality — Dual Model
+### 2.3 Application Record — Enriched from Corporate APM
+
+The enterprise Application Portfolio Management (APM) system exports ~5000 application records with ~250 fields per record. Of these, ~1300 are actively scanned (SAST: 1300, SCA: 1000, DAST: 100). All 5000 records should be imported into SynApSec to enable full app_code resolution and scanner coverage reporting.
+
+**Hybrid storage approach:** Critical fields that SynApSec actively queries/filters on get dedicated columns. Everything else is preserved in JSONB metadata.
+
+**New dedicated columns (beyond original PRD):**
+
+| Field | Type | Source APM Field | Purpose |
+|---|---|---|---|
+| `ssa_code` | String | CODICE SSA | Parent container group for the acronym |
+| `ssa_name` | String | DESCRIZIONE SSA | SSA description |
+| `functional_reference_email` | String | REFERENTE FUNZIONALE ACRONIMO EMAIL | Business/functional owner |
+| `technical_reference_email` | String | REFERENTE TECNICO ACRONIMO EMAIL | Technical owner, candidate remediation_owner |
+| `effective_office_owner` | String | Computed | Resolved owner after Struttura Reale override |
+| `effective_office_name` | String | Computed | Resolved office name after override |
+| `confidentiality_level` | String | CONFIDENTIALITY LEVEL | CIA triad — from Risk Management |
+| `integrity_level` | String | INTEGRITY LEVEL | CIA triad — from Risk Management |
+| `availability_level` | String | AVAILABILITY LEVEL | CIA triad — from Risk Management |
+| `is_dora_fei` | Boolean | L'acronimo è un acronimo di FE? | DORA essential/important function flag |
+| `is_gdpr_subject` | Boolean | Acronimo soggetto a GDPR | GDPR applicability |
+| `has_pci_data` | Boolean | FLAG DATI PCI | PCI data flag |
+| `is_psd2_relevant` | Boolean | FLAG RILEVANZA PSD2 | PSD2 relevance |
+| `apm_metadata` | JSONB | All remaining fields | Full corporate APM record preserved |
+
+**Ownership Override Logic (Struttura Reale di Gestione):**
+
+The corporate APM has two organizational blocks:
+1. **Standard hierarchy:** Ufficio → Servizio → Direzione (with respective Responsabile)
+2. **Struttura Reale di Gestione:** The actual management structure (may differ from standard)
+
+During application import, SynApSec applies this logic:
+- If Struttura Reale fields are populated AND differ from standard hierarchy → use Struttura Reale as the effective owner
+- Otherwise → use standard hierarchy
+- The resolved owner is stored in `effective_office_owner` and `effective_office_name`
+- Both original blocks are preserved in `apm_metadata` for audit/reference
+
+**Criticality fallback:** Not all APM records have a calculated ACRONYM CRITICALITY. For applications without a criticality level, SynApSec defaults to "Medium" and flags the record for analyst review.
+
+**Application Import:**
+- Upload corporate APM export as CSV/Excel
+- Configurable field mapping (CSV column → SynApSec field) to handle format changes
+- Import all ~5000 records (not just scanned ones) for full portfolio visibility
+- Scanner coverage metric: scanned applications / total applications
+- Import is repeatable (update existing records by app_code match, add new ones)
+
+### 2.4 Asset Criticality — Dual Model
 
 The enterprise Risk Management department calculates asset criticality using a complex methodology incorporating data relevance (personal, confidential, financial, credit cards, market sensitive, cyber security), process relevance (SEPA, SWIFT, Target2, DORA important functions, internet/mobile banking), and asset characterization (externalized service, internet facing, cloud technology, RTO/RPO).
 
@@ -594,3 +640,6 @@ Triage Request → AI Provider Interface → [pluggable backend]
 | 28 | Git strategy | GitHub Flow (feature branches + PRs) |
 | 29 | Monorepo | Single repo: `/frontend`, `/backend`, `/docs`, `/docker` |
 | 30 | Quality gate | Stored as SAST metadata, contextual only |
+| 31 | Application data model enrichment | Hybrid: dedicated columns for queried fields (SSA, CIA levels, regulatory flags, effective owner), JSONB for full APM record (~250 fields) |
+| 32 | Ownership override logic | Struttura Reale di Gestione overrides standard org hierarchy when different; resolved into effective_office_owner |
+| 33 | Application portfolio import | Import all ~5000 APM records (not just scanned), configurable CSV field mapping, repeatable updates by app_code match |
