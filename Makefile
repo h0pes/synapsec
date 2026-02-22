@@ -1,4 +1,4 @@
-.PHONY: dev dev-down test test-backend test-frontend test-integration lint migrate seed setup-certs
+.PHONY: dev dev-down test test-backend test-frontend test-integration test-e2e lint migrate seed setup-certs
 
 # Development
 dev:
@@ -28,6 +28,10 @@ migrate:
 # Integration tests (requires TEST_DATABASE_URL)
 test-integration:
 	cd backend && cargo test --test full_pipeline_test -- --ignored
+
+# E2E tests (requires backend + frontend running)
+test-e2e:
+	cd frontend && npx playwright test
 
 # Seed development database
 seed:
