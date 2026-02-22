@@ -1,15 +1,14 @@
-import { useTranslation } from 'react-i18next'
+import { RouterProvider } from '@tanstack/react-router'
+import { ThemeProvider } from 'next-themes'
+import { Toaster } from '@/components/ui/sonner'
+import { router } from '@/router'
 
 function App() {
-  const { t } = useTranslation()
-
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold">{t('app.title')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('app.subtitle')}</p>
-      </div>
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <RouterProvider router={router} />
+      <Toaster />
+    </ThemeProvider>
   )
 }
 
