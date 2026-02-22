@@ -31,16 +31,27 @@ risk-based prioritization, and workflow management.
 
 ## Coding Conventions
 
-### Rust (Backend)
-- All code must pass `cargo clippy` with no warnings
-- Use `thiserror` for error types, `anyhow` only in main/tests
+### Rust (Backend) — follows [Microsoft Pragmatic Rust Guidelines](https://microsoft.github.io/rust-guidelines/)
+- All code must pass `cargo clippy` with no warnings (M-STATIC-VERIFICATION)
+- Use `#[expect(lint)]` with reason instead of `#[allow(lint)]` (M-LINT-OVERRIDE-EXPECT)
+- Use `thiserror` for domain error types as canonical structs (M-ERRORS-CANONICAL-STRUCTS), `anyhow` only in main/tests (M-APP-ERROR)
+- All public types derive `Debug` (M-PUBLIC-DEBUG); error types also implement `Display` (M-PUBLIC-DISPLAY)
 - All public API types derive `Serialize`, `Deserialize`
+- Use `mimalloc` as global allocator (M-MIMALLOC-APP)
 - Database queries use SQLx compile-time checked queries where possible
 - All endpoints return consistent JSON envelope: `{ "data": ..., "error": null }`
 - Error responses: `{ "data": null, "error": { "code": "...", "message": "..." } }`
+- Structured logging via `tracing` with named fields, not string interpolation (M-LOG-STRUCTURED)
 - Never log sensitive data (passwords, API keys, finding details in error messages)
 - All timestamps in UTC, stored as `timestamptz` in PostgreSQL
 - UUIDs for all primary keys (v7 for time-ordered, v4 for random)
+- Panic only for programming bugs, never for request errors (M-PANIC-IS-STOP, M-PANIC-ON-BUG)
+- Avoid `unsafe` unless justified with documented reason (M-UNSAFE)
+- Name types descriptively — avoid "Service", "Manager", "Factory" (M-CONCISE-NAMES)
+- Prefer concrete types > generics > `dyn Trait` (M-DI-HIERARCHY)
+- Document all magic values and constants with rationale (M-DOCUMENTED-MAGIC)
+- Long-running async tasks must yield cooperatively (M-YIELD-POINTS)
+- See `backend/CLAUDE.md` for full guideline reference
 
 ### TypeScript (Frontend)
 - Strict TypeScript — no `any` types
