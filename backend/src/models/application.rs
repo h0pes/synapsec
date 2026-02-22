@@ -136,7 +136,7 @@ pub struct UpdateApplication {
 }
 
 /// Summary DTO for list views.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ApplicationSummary {
     pub id: Uuid,
     pub app_name: String,

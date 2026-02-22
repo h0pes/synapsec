@@ -64,12 +64,22 @@ async fn main() -> anyhow::Result<()> {
         .route("/auth/users", post(routes::auth::create_user))
         .route("/auth/me", get(routes::auth::me));
 
+    // API v1 application routes
+    let app_routes = Router::new()
+        .route("/applications", get(routes::applications::list).post(routes::applications::create))
+        .route("/applications/unverified", get(routes::applications::list_unverified))
+        .route("/applications/import", post(routes::applications::import_bulk))
+        .route("/applications/import/apm", post(routes::applications::import_apm))
+        .route("/applications/code/{code}", get(routes::applications::get_by_code))
+        .route("/applications/{id}", get(routes::applications::get_by_id).put(routes::applications::update));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
         .route("/health/ready", get(routes::health::ready))
         // API v1
         .nest("/api/v1", auth_routes)
+        .nest("/api/v1", app_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

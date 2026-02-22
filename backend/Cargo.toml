@@ -42,8 +42,9 @@ mimalloc = "0.1"
 # Redis
 redis = { version = "1", features = ["tokio-comp"] }
 
-# CSV/SARIF parsing
+# CSV/SARIF/Excel parsing
 csv = "1"
+calamine = "0.33"
 quick-xml = "0.39"
 
 [dev-dependencies]
