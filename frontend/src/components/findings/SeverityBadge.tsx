@@ -9,10 +9,10 @@ const SEVERITY_STYLES: Record<SeverityLevel, string> = {
   Info: 'bg-gray-400 text-white hover:bg-gray-500',
 }
 
-export function SeverityBadge({ severity }: { severity: SeverityLevel }) {
+export function SeverityBadge({ severity, count }: { severity: SeverityLevel; count?: number }) {
   return (
     <Badge className={SEVERITY_STYLES[severity]}>
-      {severity}
+      {count != null ? `${count} ${severity}` : severity}
     </Badge>
   )
 }

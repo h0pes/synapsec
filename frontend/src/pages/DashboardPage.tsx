@@ -1,14 +1,224 @@
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from '@tanstack/react-router'
+import {
+  AlertTriangle,
+  Clock,
+  FileWarning,
+  Shield,
+  TrendingUp,
+  Upload,
+} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { SeverityBadge } from '@/components/findings/SeverityBadge'
+import * as dashboardApi from '@/api/dashboard'
+import type { DashboardStats } from '@/api/dashboard'
 
 export function DashboardPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await dashboardApi.getStats()
+      setStats(data)
+    } catch {
+      // handled by client
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center text-muted-foreground">
+        {t('common.loading')}
+      </div>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">{t('nav.dashboard')}</h1>
+        <p className="text-muted-foreground">Unable to load dashboard data.</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('nav.dashboard')}</h1>
-      <p className="mt-2 text-muted-foreground">
-        {t('app.subtitle')}
-      </p>
+
+      {/* Summary cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card
+          className="cursor-pointer transition-colors hover:bg-muted/50"
+          onClick={() => navigate({ to: '/triage' })}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Awaiting Triage</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.triage_count}</div>
+            <p className="text-xs text-muted-foreground">findings in New status</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer transition-colors hover:bg-muted/50"
+          onClick={() => navigate({ to: '/unmapped' })}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Unmapped Apps</CardTitle>
+            <FileWarning className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.unmapped_apps_count}</div>
+            <p className="text-xs text-muted-foreground">unverified applications</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">SLA Status</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline gap-3">
+              <span className="text-2xl font-bold text-green-600">{stats.sla_summary.on_track}</span>
+              <span className="text-sm text-yellow-600">{stats.sla_summary.at_risk} at risk</span>
+              <span className="text-sm text-destructive">{stats.sla_summary.breached} breached</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer transition-colors hover:bg-muted/50"
+          onClick={() => navigate({ to: '/findings' })}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Open Findings</CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <SeverityBadge severity="Critical" count={stats.severity_counts.critical} />
+              <SeverityBadge severity="High" count={stats.severity_counts.high} />
+              <SeverityBadge severity="Medium" count={stats.severity_counts.medium} />
+              <SeverityBadge severity="Low" count={stats.severity_counts.low} />
+              <SeverityBadge severity="Info" count={stats.severity_counts.info} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom row */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent ingestions */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-4 w-4" /> Recent Imports
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.recent_ingestions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No recent imports</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.recent_ingestions.map((ing) => (
+                  <div
+                    key={ing.id}
+                    className="flex items-center justify-between rounded border p-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{ing.source_tool}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {ing.file_name || 'No file'} — {ing.total_records} records, {ing.new_findings} new
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge
+                        variant="outline"
+                        className={
+                          ing.status === 'Completed'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : ing.status === 'Failed'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              : ''
+                        }
+                      >
+                        {ing.status}
+                      </Badge>
+                      {ing.completed_at && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {new Date(ing.completed_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top risky apps */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" /> Riskiest Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.top_risky_apps.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No application data</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.top_risky_apps.map((app) => (
+                  <div
+                    key={app.id}
+                    className="flex cursor-pointer items-center justify-between rounded border p-3 transition-colors hover:bg-muted/50"
+                    onClick={() =>
+                      navigate({ to: '/applications/$id', params: { id: app.id } })
+                    }
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{app.app_name}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{app.app_code}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {app.critical_count > 0 && (
+                        <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                          {app.critical_count} Critical
+                        </Badge>
+                      )}
+                      {app.high_count > 0 && (
+                        <Badge variant="outline" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                          {app.high_count} High
+                        </Badge>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {app.finding_count} total
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
