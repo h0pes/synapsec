@@ -84,6 +84,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/findings/{id}/comments", get(routes::findings::list_comments).post(routes::findings::add_comment))
         .route("/findings/{id}/history", get(routes::findings::get_history));
 
+    // API v1 ingestion routes
+    let ingestion_routes = Router::new()
+        .route("/ingestion/upload", post(routes::ingestion::upload))
+        .route("/ingestion/history", get(routes::ingestion::history))
+        .route("/ingestion/{id}", get(routes::ingestion::get_log));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
@@ -92,6 +98,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", auth_routes)
         .nest("/api/v1", app_routes)
         .nest("/api/v1", finding_routes)
+        .nest("/api/v1", ingestion_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

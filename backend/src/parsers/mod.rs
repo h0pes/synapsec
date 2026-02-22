@@ -34,7 +34,8 @@ pub struct ParseError {
 }
 
 /// Input format for scanner data.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum InputFormat {
     Json,
     Csv,
