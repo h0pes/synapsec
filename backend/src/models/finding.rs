@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "finding_category", rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FindingCategory {
     Sast,
     Sca,
@@ -21,17 +22,22 @@ pub enum FindingStatus {
     New,
     Confirmed,
     #[sqlx(rename = "In_Remediation")]
+    #[serde(rename = "In_Remediation")]
     InRemediation,
     Mitigated,
     Verified,
     Closed,
     #[sqlx(rename = "False_Positive_Requested")]
+    #[serde(rename = "False_Positive_Requested")]
     FalsePositiveRequested,
     #[sqlx(rename = "False_Positive")]
+    #[serde(rename = "False_Positive")]
     FalsePositive,
     #[sqlx(rename = "Risk_Accepted")]
+    #[serde(rename = "Risk_Accepted")]
     RiskAccepted,
     #[sqlx(rename = "Deferred_Remediation")]
+    #[serde(rename = "Deferred_Remediation")]
     DeferredRemediation,
     Invalidated,
 }
@@ -63,8 +69,10 @@ impl SeverityLevel {
 #[sqlx(type_name = "sla_status")]
 pub enum SlaStatus {
     #[sqlx(rename = "On_Track")]
+    #[serde(rename = "On_Track")]
     OnTrack,
     #[sqlx(rename = "At_Risk")]
+    #[serde(rename = "At_Risk")]
     AtRisk,
     Breached,
 }
@@ -245,12 +253,13 @@ mod tests {
     fn finding_status_serialization() {
         let status = FindingStatus::InRemediation;
         let json = serde_json::to_string(&status).unwrap();
-        assert_eq!(json, "\"InRemediation\"");
+        assert_eq!(json, "\"In_Remediation\"");
     }
 
     #[test]
     fn finding_status_deserialization() {
-        let status: FindingStatus = serde_json::from_str("\"FalsePositiveRequested\"").unwrap();
+        let status: FindingStatus =
+            serde_json::from_str("\"False_Positive_Requested\"").unwrap();
         assert_eq!(status, FindingStatus::FalsePositiveRequested);
     }
 
@@ -258,7 +267,7 @@ mod tests {
     fn finding_category_serialization() {
         let cat = FindingCategory::Sast;
         let json = serde_json::to_string(&cat).unwrap();
-        assert_eq!(json, "\"Sast\"");
+        assert_eq!(json, "\"SAST\"");
     }
 
     #[test]

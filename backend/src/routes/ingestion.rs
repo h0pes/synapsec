@@ -4,12 +4,12 @@ use axum::{
     extract::{Multipart, Path, Query, State},
     Json,
 };
-use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::errors::{ApiResponse, AppError};
 use crate::middleware::auth::CurrentUser;
 use crate::middleware::rbac::RequireManager;
+use crate::models::pagination::{PagedResult, Pagination};
 use crate::parsers::InputFormat;
 use crate::services::ingestion::{
     self, IngestionLog, IngestionLogSummary, IngestionResult, ParserType,
@@ -92,23 +92,16 @@ pub async fn upload(
     Ok(ApiResponse::success(result))
 }
 
-/// Query parameters for ingestion history listing.
-#[derive(Debug, Deserialize)]
-pub struct HistoryQuery {
-    pub limit: Option<i64>,
-    pub offset: Option<i64>,
-}
-
 /// GET /api/v1/ingestion/history — list past ingestion events.
 pub async fn history(
     State(state): State<AppState>,
     _user: CurrentUser,
-    Query(query): Query<HistoryQuery>,
-) -> Result<Json<ApiResponse<Vec<IngestionLogSummary>>>, AppError> {
-    let limit = query.limit.unwrap_or(20).min(100);
-    let offset = query.offset.unwrap_or(0).max(0);
-    let logs = ingestion::list_history(&state.db, limit, offset).await?;
-    Ok(ApiResponse::success(logs))
+    Query(pagination): Query<Pagination>,
+) -> Result<Json<ApiResponse<PagedResult<IngestionLogSummary>>>, AppError> {
+    let total = ingestion::count_history(&state.db).await?;
+    let logs = ingestion::list_history(&state.db, pagination.limit(), pagination.offset()).await?;
+    let paged = PagedResult::new(logs, total, &pagination);
+    Ok(ApiResponse::success(paged))
 }
 
 /// GET /api/v1/ingestion/:id — get full ingestion log details.

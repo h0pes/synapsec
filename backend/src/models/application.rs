@@ -9,12 +9,15 @@ use uuid::Uuid;
 #[sqlx(type_name = "asset_criticality")]
 pub enum AssetCriticality {
     #[sqlx(rename = "Very_High")]
+    #[serde(rename = "Very_High")]
     VeryHigh,
     High,
     #[sqlx(rename = "Medium_High")]
+    #[serde(rename = "Medium_High")]
     MediumHigh,
     Medium,
     #[sqlx(rename = "Medium_Low")]
+    #[serde(rename = "Medium_Low")]
     MediumLow,
     Low,
 }
@@ -23,10 +26,13 @@ pub enum AssetCriticality {
 #[sqlx(type_name = "asset_tier")]
 pub enum AssetTier {
     #[sqlx(rename = "Tier_1")]
+    #[serde(rename = "Tier_1")]
     Tier1,
     #[sqlx(rename = "Tier_2")]
+    #[serde(rename = "Tier_2")]
     Tier2,
     #[sqlx(rename = "Tier_3")]
+    #[serde(rename = "Tier_3")]
     Tier3,
 }
 
@@ -34,11 +40,13 @@ pub enum AssetTier {
 #[sqlx(type_name = "exposure_level")]
 pub enum ExposureLevel {
     #[sqlx(rename = "Internet_Facing")]
+    #[serde(rename = "Internet_Facing")]
     InternetFacing,
     #[serde(rename = "DMZ")]
     Dmz,
     Internal,
     #[sqlx(rename = "Dev_Test")]
+    #[serde(rename = "Dev_Test")]
     DevTest,
 }
 
@@ -156,7 +164,7 @@ mod tests {
     fn asset_criticality_serialization() {
         let c = AssetCriticality::VeryHigh;
         let json = serde_json::to_string(&c).unwrap();
-        assert_eq!(json, "\"VeryHigh\"");
+        assert_eq!(json, "\"Very_High\"");
     }
 
     #[test]

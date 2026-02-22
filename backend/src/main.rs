@@ -106,6 +106,10 @@ async fn main() -> anyhow::Result<()> {
         .route("/ingestion/history", get(routes::ingestion::history))
         .route("/ingestion/{id}", get(routes::ingestion::get_log));
 
+    // API v1 dashboard routes
+    let dashboard_routes = Router::new()
+        .route("/dashboard/stats", get(routes::dashboard::stats));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
@@ -115,6 +119,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", app_routes)
         .nest("/api/v1", finding_routes)
         .nest("/api/v1", ingestion_routes)
+        .nest("/api/v1", dashboard_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

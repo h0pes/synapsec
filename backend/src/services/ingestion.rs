@@ -18,6 +18,7 @@ use crate::services::{application, deduplication, finding};
 /// Summary of an ingestion run.
 #[derive(Debug, Serialize)]
 pub struct IngestionResult {
+    #[serde(rename = "ingestion_log_id")]
     pub ingestion_id: Uuid,
     pub source_tool: String,
     pub source_tool_version: Option<String>,
@@ -25,7 +26,11 @@ pub struct IngestionResult {
     pub new_findings: usize,
     pub updated_findings: usize,
     pub reopened_findings: usize,
-    pub errors: Vec<IngestionError>,
+    pub duplicates: usize,
+    pub quarantined: usize,
+    #[serde(rename = "errors")]
+    pub error_count: usize,
+    pub error_details: Vec<IngestionError>,
 }
 
 /// Error during ingestion of a single record.
@@ -171,6 +176,9 @@ pub async fn ingest_file(
     )
     .await?;
 
+    let error_count = errors.len();
+    let duplicates = updated_findings;
+
     Ok(IngestionResult {
         ingestion_id,
         source_tool: parse_result.source_tool,
@@ -179,7 +187,10 @@ pub async fn ingest_file(
         new_findings,
         updated_findings,
         reopened_findings,
-        errors,
+        duplicates,
+        quarantined: 0,
+        error_count,
+        error_details: errors,
     })
 }
 
@@ -251,7 +262,7 @@ async fn log_ingestion(pool: &PgPool, input: &IngestionLogInput<'_>) -> Result<U
             errors, quarantined, status, error_details,
             started_at, completed_at, initiated_by
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, 'completed', $9, NOW(), NOW(), $10)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, 'Completed', $9, NOW(), NOW(), $10)
         RETURNING id
         "#,
     )
@@ -269,6 +280,14 @@ async fn log_ingestion(pool: &PgPool, input: &IngestionLogInput<'_>) -> Result<U
     .await?;
 
     Ok(row)
+}
+
+/// Count total ingestion log entries.
+pub async fn count_history(pool: &PgPool) -> Result<i64, AppError> {
+    let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM ingestion_logs")
+        .fetch_one(pool)
+        .await?;
+    Ok(count)
 }
 
 /// Get ingestion history with pagination.
@@ -348,12 +367,19 @@ mod tests {
             new_findings: 7,
             updated_findings: 2,
             reopened_findings: 1,
-            errors: vec![],
+            duplicates: 3,
+            quarantined: 0,
+            error_count: 0,
+            error_details: vec![],
         };
         let json = serde_json::to_value(&result).unwrap();
+        assert_eq!(json["ingestion_log_id"], Uuid::nil().to_string());
         assert_eq!(json["total_parsed"], 10);
         assert_eq!(json["new_findings"], 7);
         assert_eq!(json["updated_findings"], 2);
         assert_eq!(json["reopened_findings"], 1);
+        assert_eq!(json["duplicates"], 3);
+        assert_eq!(json["quarantined"], 0);
+        assert_eq!(json["errors"], 0);
     }
 }
