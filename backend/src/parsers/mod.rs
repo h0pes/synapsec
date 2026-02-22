@@ -3,6 +3,7 @@
 //! Each parser implements the `Parser` trait, producing normalized
 //! `ParsedFinding` records from tool-specific formats (JSON, CSV, XML, SARIF).
 
+pub mod sarif;
 pub mod sonarqube;
 
 use crate::models::finding::{CreateFinding, FindingCategory, SeverityLevel};

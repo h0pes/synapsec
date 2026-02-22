@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SecurityScanner",
+          "version": "3.2.1",
+          "rules": [
+            {
+              "id": "SEC001",
+              "name": "SqlInjection",
+              "shortDescription": { "text": "SQL Injection vulnerability detected" },
+              "fullDescription": { "text": "User input is concatenated directly into a SQL query without sanitization, enabling SQL injection attacks." },
+              "defaultConfiguration": { "level": "error" },
+              "properties": { "tags": ["security", "CWE-89", "OWASP-A03"] }
+            },
+            {
+              "id": "SEC002",
+              "name": "CrossSiteScripting",
+              "shortDescription": { "text": "Cross-Site Scripting (XSS) vulnerability" },
+              "fullDescription": { "text": "User input is reflected in HTTP response without proper encoding, enabling XSS attacks." },
+              "defaultConfiguration": { "level": "error" },
+              "properties": { "tags": ["security", "CWE-79", "OWASP-A03"] }
+            },
+            {
+              "id": "SEC003",
+              "name": "HardcodedCredential",
+              "shortDescription": { "text": "Hard-coded credential found" },
+              "fullDescription": { "text": "A credential appears to be hard-coded in source code." },
+              "defaultConfiguration": { "level": "warning" },
+              "properties": { "tags": ["security", "CWE-798", "OWASP-A07"] }
+            },
+            {
+              "id": "SEC004",
+              "name": "InsecureRandomness",
+              "shortDescription": { "text": "Insecure random number generator used" },
+              "fullDescription": { "text": "A cryptographically weak random number generator is used for security-sensitive operations." },
+              "defaultConfiguration": { "level": "note" },
+              "properties": { "tags": ["security", "CWE-330"] }
+            },
+            {
+              "id": "SEC005",
+              "name": "PathTraversal",
+              "shortDescription": { "text": "Path traversal vulnerability" },
+              "fullDescription": { "text": "User input is used in file path operations without sanitization." },
+              "defaultConfiguration": { "level": "error" },
+              "properties": { "tags": ["security", "CWE-22", "OWASP-A01"] }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "SEC001",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": { "text": "SQL query constructed using string concatenation with user input parameter 'userId'" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main/java/com/bank/dao/UserDao.java" },
+                "region": { "startLine": 45, "endLine": 48, "startColumn": 12 }
+              }
+            }
+          ],
+          "fingerprints": { "primaryLocationLineHash": "abc123def456" },
+          "properties": { "application_code": "APP01" }
+        },
+        {
+          "ruleId": "SEC002",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": { "text": "User input from request parameter 'name' reflected in response without encoding" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main/java/com/bank/web/SearchController.java" },
+                "region": { "startLine": 72, "endLine": 72 }
+              }
+            }
+          ],
+          "properties": { "application_code": "APP01" }
+        },
+        {
+          "ruleId": "SEC003",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": { "text": "Hard-coded database password found in configuration class" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main/java/com/bank/config/DatabaseConfig.java" },
+                "region": { "startLine": 15, "endLine": 15 }
+              }
+            }
+          ],
+          "properties": { "application_code": "APP02" }
+        },
+        {
+          "ruleId": "SEC004",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": { "text": "java.util.Random used for token generation — use SecureRandom instead" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main/java/com/bank/auth/TokenService.java" },
+                "region": { "startLine": 33, "endLine": 33 }
+              }
+            }
+          ],
+          "properties": { "application_code": "APP02" }
+        },
+        {
+          "ruleId": "SEC005",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": { "text": "File path constructed from user input without path traversal protection" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/main/java/com/bank/files/FileService.java" },
+                "region": { "startLine": 89, "endLine": 92 }
+              }
+            }
+          ],
+          "properties": { "application_code": "APP01" }
+        }
+      ]
+    }
+  ]
+}
