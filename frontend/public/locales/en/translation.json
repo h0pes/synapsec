@@ -1,0 +1,30 @@
+{
+  "app": {
+    "title": "SynApSec",
+    "subtitle": "Application Security Orchestration"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "findings": "Findings",
+    "applications": "Applications",
+    "ingestion": "Ingestion",
+    "triage": "Triage Queue",
+    "unmapped": "Unmapped Apps"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "username": "Username",
+    "password": "Password"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noResults": "No results found"
+  }
+}
