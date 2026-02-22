@@ -20,13 +20,23 @@ risk-based prioritization, and workflow management.
 - `/docker` — Docker configs, Nginx, init scripts
 - `/docs` — PRD, design docs, plans
 
+## Database Conventions
+- **Role:** `synapsec_user` — dedicated PostgreSQL role for the application
+- **Databases:** `synapsec_dev` (development), `synapsec_test` (integration tests), `synapsec_prod` (production)
+- **Extensions:** `uuid-ossp` and `pgcrypto` installed on all databases
+- **Migrations:** Managed by SQLx (`backend/migrations/`), applied automatically on server start
+- **Local dev** connects to `synapsec_dev`; integration tests connect to `synapsec_test`
+- Docker Compose provides PostgreSQL for containerized setups; local PostgreSQL works directly
+
 ## Development Commands
 - `make dev` — Start all services (Docker Compose)
 - `make test` — Run all tests (backend + frontend)
 - `make test-backend` — Run Rust tests only
 - `make test-frontend` — Run frontend tests only
+- `make test-integration` — Run integration tests (requires `TEST_DATABASE_URL`)
 - `make lint` — Run linters (clippy + eslint)
 - `make migrate` — Run database migrations
+- `make seed` — Seed development database with sample data
 - `make setup-certs` — Generate mkcert certificates
 
 ## Coding Conventions

@@ -17,7 +17,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://synapsec:synapsec_dev@postgres:5432/synapsec
+      DATABASE_URL: postgresql://synapsec_user:synapsec_dev_password@postgres:5432/synapsec_dev
       REDIS_URL: redis://redis:6379
       RUST_LOG: synapsec=debug,tower_http=debug
     depends_on:

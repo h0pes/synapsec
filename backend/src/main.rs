@@ -6,9 +6,10 @@ use axum::{
 };
 use mimalloc::MiMalloc;
 use synapsec::{config::AppConfig, db, routes, AppState};
+use axum::http::header;
 use tower_http::{
     compression::CompressionLayer,
-    cors::{Any, CorsLayer},
+    cors::CorsLayer,
     trace::TraceLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
@@ -47,8 +48,18 @@ async fn main() -> anyhow::Result<()> {
                 .parse::<axum::http::HeaderValue>()
                 .expect("Invalid FRONTEND_URL"),
         )
-        .allow_methods(Any)
-        .allow_headers(Any)
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::PATCH,
+            axum::http::Method::DELETE,
+        ])
+        .allow_headers([
+            header::CONTENT_TYPE,
+            header::AUTHORIZATION,
+            header::ACCEPT,
+        ])
         .allow_credentials(true);
 
     let state = AppState {
