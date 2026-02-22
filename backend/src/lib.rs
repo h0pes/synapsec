@@ -1,7 +1,7 @@
 pub mod config;
+pub mod db;
 
 // These modules will be added as we build them:
-// pub mod db;
 // pub mod errors;
 // pub mod models;
 // pub mod routes;
