@@ -20,6 +20,11 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Install rustls crypto provider (required for rustls 0.23+)
+    rustls::crypto::aws_lc_rs::default_provider()
+        .install_default()
+        .expect("Failed to install rustls crypto provider");
+
     dotenvy::dotenv().ok();
 
     tracing_subscriber::registry()
@@ -116,10 +121,32 @@ async fn main() -> anyhow::Result<()> {
         .with_state(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
-    tracing::info!(host = %addr, "Starting SynApSec API server");
 
-    let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
+    match (&config.tls_cert_path, &config.tls_key_path) {
+        (Some(cert), Some(key)) => {
+            let cert_path = std::path::PathBuf::from(cert);
+            let key_path = std::path::PathBuf::from(key);
+
+            tracing::info!("TLS enabled — loading certificates...");
+            tracing::info!(path = %cert_path.display(), "Certificate");
+            tracing::info!(path = %key_path.display(), "Private key");
+
+            let tls_config =
+                axum_server::tls_rustls::RustlsConfig::from_pem_file(&cert_path, &key_path)
+                    .await
+                    .map_err(|e| anyhow::anyhow!("Failed to load TLS certificates: {e}"))?;
+
+            tracing::info!(host = %addr, "HTTPS server listening");
+            axum_server::bind_rustls(addr, tls_config)
+                .serve(app.into_make_service())
+                .await?;
+        }
+        _ => {
+            tracing::warn!(host = %addr, "Starting HTTP server (TLS not configured)");
+            let listener = tokio::net::TcpListener::bind(addr).await?;
+            axum::serve(listener, app).await?;
+        }
+    }
 
     Ok(())
 }

@@ -12,6 +12,8 @@ pub struct AppConfig {
     pub jwt_access_token_expiry_secs: i64,
     pub jwt_refresh_token_expiry_secs: i64,
     pub frontend_url: String,
+    pub tls_cert_path: Option<String>,
+    pub tls_key_path: Option<String>,
 }
 
 impl AppConfig {
@@ -40,6 +42,8 @@ impl AppConfig {
                 .unwrap_or(604800),
             frontend_url: env::var("FRONTEND_URL")
                 .unwrap_or_else(|_| "https://localhost:5173".to_string()),
+            tls_cert_path: env::var("TLS_CERT_PATH").ok(),
+            tls_key_path: env::var("TLS_KEY_PATH").ok(),
         })
     }
 }
