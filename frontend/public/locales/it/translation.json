@@ -1,0 +1,30 @@
+{
+  "app": {
+    "title": "SynApSec",
+    "subtitle": "Orchestrazione della Sicurezza Applicativa"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "findings": "Risultati",
+    "applications": "Applicazioni",
+    "ingestion": "Importazione",
+    "triage": "Coda di Triage",
+    "unmapped": "App Non Mappate"
+  },
+  "auth": {
+    "login": "Accedi",
+    "logout": "Esci",
+    "username": "Nome utente",
+    "password": "Password"
+  },
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "loading": "Caricamento...",
+    "noResults": "Nessun risultato trovato"
+  }
+}
