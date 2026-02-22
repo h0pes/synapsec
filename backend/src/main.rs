@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{
-    routing::{get, post},
+    routing::{get, patch, post},
     Router,
 };
 use mimalloc::MiMalloc;
@@ -73,6 +73,17 @@ async fn main() -> anyhow::Result<()> {
         .route("/applications/code/{code}", get(routes::applications::get_by_code))
         .route("/applications/{id}", get(routes::applications::get_by_id).put(routes::applications::update));
 
+    // API v1 finding routes
+    let finding_routes = Router::new()
+        .route("/findings", get(routes::findings::list).post(routes::findings::create))
+        .route("/findings/bulk/status", post(routes::findings::bulk_status))
+        .route("/findings/bulk/assign", post(routes::findings::bulk_assign))
+        .route("/findings/bulk/tag", post(routes::findings::bulk_tag))
+        .route("/findings/{id}", get(routes::findings::get_by_id).put(routes::findings::update))
+        .route("/findings/{id}/status", patch(routes::findings::update_status))
+        .route("/findings/{id}/comments", get(routes::findings::list_comments).post(routes::findings::add_comment))
+        .route("/findings/{id}/history", get(routes::findings::get_history));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
@@ -80,6 +91,7 @@ async fn main() -> anyhow::Result<()> {
         // API v1
         .nest("/api/v1", auth_routes)
         .nest("/api/v1", app_routes)
+        .nest("/api/v1", finding_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

@@ -173,7 +173,7 @@ pub struct UpdateFinding {
 }
 
 /// Response DTO excluding raw_finding for list views.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct FindingSummary {
     pub id: Uuid,
     pub source_tool: String,
