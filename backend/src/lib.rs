@@ -6,8 +6,7 @@ pub mod models;
 pub mod routes;
 pub mod services;
 
-// These modules will be added as we build them:
-// pub mod parsers;
+pub mod parsers;
 
 use sqlx::PgPool;
 
