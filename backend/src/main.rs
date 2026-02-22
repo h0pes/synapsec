@@ -1,6 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use mimalloc::MiMalloc;
 use synapsec::{config::AppConfig, db, routes, AppState};
 use tower_http::{
@@ -53,12 +56,20 @@ async fn main() -> anyhow::Result<()> {
         config: config.clone(),
     };
 
+    // API v1 auth routes
+    let auth_routes = Router::new()
+        .route("/auth/login", post(routes::auth::login))
+        .route("/auth/refresh", post(routes::auth::refresh))
+        .route("/auth/logout", post(routes::auth::logout))
+        .route("/auth/users", post(routes::auth::create_user))
+        .route("/auth/me", get(routes::auth::me));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
         .route("/health/ready", get(routes::health::ready))
-        // API v1 routes will be nested here:
-        // .nest("/api/v1", api_routes)
+        // API v1
+        .nest("/api/v1", auth_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

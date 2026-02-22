@@ -1,13 +1,13 @@
 pub mod config;
 pub mod db;
 pub mod errors;
+pub mod middleware;
 pub mod models;
 pub mod routes;
+pub mod services;
 
 // These modules will be added as we build them:
-// pub mod services;
 // pub mod parsers;
-// pub mod middleware;
 
 use sqlx::PgPool;
 
