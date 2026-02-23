@@ -6,7 +6,7 @@
 
 use sqlx::PgPool;
 
-const ADMIN_PASSWORD: &str = "change-me-immediately";
+const ADMIN_PASSWORD: &str = "Test123!";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -39,12 +39,17 @@ async fn seed_admin_user(pool: &PgPool) -> anyhow::Result<()> {
         .fetch_one(pool)
         .await?;
 
+    let hash = synapsec::services::auth::hash_password(ADMIN_PASSWORD)?;
+
     if exists {
-        println!("[skip] Admin user already exists");
+        // Update password for existing admin user
+        sqlx::query("UPDATE users SET password_hash = $1 WHERE username = 'admin'")
+            .bind(&hash)
+            .execute(pool)
+            .await?;
+        println!("[done] Updated admin password");
         return Ok(());
     }
-
-    let hash = synapsec::services::auth::hash_password(ADMIN_PASSWORD)?;
 
     sqlx::query(
         "INSERT INTO users (username, email, password_hash, display_name, role)

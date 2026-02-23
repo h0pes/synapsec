@@ -12,7 +12,7 @@ test.describe('Authentication', () => {
   test('login with valid credentials redirects to dashboard', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel('Username').fill('admin')
-    await page.getByLabel('Password').fill('change-me-immediately')
+    await page.getByLabel('Password').fill('Test123!')
     await page.getByRole('button', { name: /sign in/i }).click()
 
     await expect(page).toHaveURL('/', { timeout: 10000 })
@@ -32,7 +32,7 @@ test.describe('Authentication', () => {
     // Login first
     await page.goto('/login')
     await page.getByLabel('Username').fill('admin')
-    await page.getByLabel('Password').fill('change-me-immediately')
+    await page.getByLabel('Password').fill('Test123!')
     await page.getByRole('button', { name: /sign in/i }).click()
     await expect(page).toHaveURL('/', { timeout: 10000 })
 

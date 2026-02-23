@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 async function login(page: import('@playwright/test').Page) {
   await page.goto('/login')
   await page.getByLabel('Username').fill('admin')
-  await page.getByLabel('Password').fill('change-me-immediately')
+  await page.getByLabel('Password').fill('Test123!')
   await page.getByRole('button', { name: /sign in/i }).click()
   await expect(page).toHaveURL('/', { timeout: 10000 })
 }
