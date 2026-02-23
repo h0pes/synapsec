@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useRouter } from '@tanstack/react-router'
+import { useRouter, useRouterState } from '@tanstack/react-router'
 import {
   LayoutDashboard,
   Search,
@@ -37,7 +37,7 @@ type SidebarProps = {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { t } = useTranslation()
   const router = useRouter()
-  const currentPath = router.state.location.pathname
+  const currentPath = useRouterState({ select: (s) => s.location.pathname })
 
   return (
     <aside
@@ -61,7 +61,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-2 py-3">
         {NAV_ITEMS.map((item) => {
-          const active = currentPath === item.path
+          const active =
+            item.path === '/'
+              ? currentPath === '/'
+              : currentPath.startsWith(item.path)
           return (
             <a
               key={item.path}
