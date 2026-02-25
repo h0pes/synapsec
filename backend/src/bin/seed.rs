@@ -27,6 +27,8 @@ async fn main() -> anyhow::Result<()> {
     seed_applications(&pool).await?;
     seed_system_config(&pool).await?;
     seed_sample_findings(&pool).await?;
+    seed_sca_findings(&pool).await?;
+    seed_dast_findings(&pool).await?;
 
     println!("\n=== Seed complete! ===");
     println!("Admin login: admin / {ADMIN_PASSWORD}");
@@ -163,6 +165,104 @@ async fn seed_sample_findings(pool: &PgPool) -> anyhow::Result<()> {
 
     println!(
         "[done] Ingested SonarQube sample: {} parsed, {} new, {} updated",
+        result.total_parsed, result.new_findings, result.updated_findings
+    );
+
+    Ok(())
+}
+
+async fn seed_sca_findings(pool: &PgPool) -> anyhow::Result<()> {
+    let already_seeded: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM ingestion_logs WHERE source_tool = $1)",
+    )
+    .bind("JFrog Xray")
+    .fetch_one(pool)
+    .await?;
+
+    if already_seeded {
+        println!("[skip] SCA findings already seeded");
+        return Ok(());
+    }
+
+    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/jfrog_xray_seed.json");
+
+    if !fixture_path.exists() {
+        println!(
+            "[skip] SCA fixture file not found at {}",
+            fixture_path.display()
+        );
+        return Ok(());
+    }
+
+    let data = std::fs::read(&fixture_path)?;
+
+    let admin_id: Option<uuid::Uuid> =
+        sqlx::query_scalar("SELECT id FROM users WHERE username = 'admin'")
+            .fetch_optional(pool)
+            .await?;
+
+    let result = synapsec::services::ingestion::ingest_file(
+        pool,
+        &data,
+        "jfrog_xray_seed.json",
+        &synapsec::services::ingestion::ParserType::JfrogXray,
+        &synapsec::parsers::InputFormat::Json,
+        admin_id.unwrap_or_default(),
+    )
+    .await?;
+
+    println!(
+        "[done] Ingested JFrog Xray sample: {} parsed, {} new, {} updated",
+        result.total_parsed, result.new_findings, result.updated_findings
+    );
+
+    Ok(())
+}
+
+async fn seed_dast_findings(pool: &PgPool) -> anyhow::Result<()> {
+    let already_seeded: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM ingestion_logs WHERE source_tool = $1)",
+    )
+    .bind("Tenable WAS")
+    .fetch_one(pool)
+    .await?;
+
+    if already_seeded {
+        println!("[skip] DAST findings already seeded");
+        return Ok(());
+    }
+
+    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/tenable_was_seed.csv");
+
+    if !fixture_path.exists() {
+        println!(
+            "[skip] DAST fixture file not found at {}",
+            fixture_path.display()
+        );
+        return Ok(());
+    }
+
+    let data = std::fs::read(&fixture_path)?;
+
+    let admin_id: Option<uuid::Uuid> =
+        sqlx::query_scalar("SELECT id FROM users WHERE username = 'admin'")
+            .fetch_optional(pool)
+            .await?;
+
+    let result = synapsec::services::ingestion::ingest_file(
+        pool,
+        &data,
+        "tenable_was_seed.csv",
+        &synapsec::services::ingestion::ParserType::TenableWas,
+        &synapsec::parsers::InputFormat::Csv,
+        admin_id.unwrap_or_default(),
+    )
+    .await?;
+
+    println!(
+        "[done] Ingested Tenable WAS sample: {} parsed, {} new, {} updated",
         result.total_parsed, result.new_findings, result.updated_findings
     );
 
