@@ -1,6 +1,7 @@
 //! Route definitions for the SynApSec API.
 
 pub mod applications;
+pub mod attack_chains;
 pub mod auth;
 pub mod correlation;
 pub mod dashboard;

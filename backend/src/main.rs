@@ -128,6 +128,11 @@ async fn main() -> anyhow::Result<()> {
     let dashboard_routes = Router::new()
         .route("/dashboard/stats", get(routes::dashboard::stats));
 
+    // API v1 attack chain routes
+    let attack_chain_routes = Router::new()
+        .route("/attack-chains", get(routes::attack_chains::list))
+        .route("/attack-chains/{app_id}", get(routes::attack_chains::get_by_app));
+
     let app = Router::new()
         // Health endpoints (no auth required)
         .route("/health/live", get(routes::health::live))
@@ -140,6 +145,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", correlation_routes)
         .nest("/api/v1", dedup_routes)
         .nest("/api/v1", dashboard_routes)
+        .nest("/api/v1", attack_chain_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

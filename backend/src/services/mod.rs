@@ -2,6 +2,7 @@
 
 pub mod app_code_resolver;
 pub mod application;
+pub mod attack_chains;
 pub mod auth;
 pub mod correlation;
 pub mod correlation_service;
