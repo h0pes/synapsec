@@ -134,3 +134,28 @@ export type FindingFilters = {
   sla_status?: SlaStatus
   search?: string
 }
+
+export type FindingCategoryData = {
+  // SAST fields
+  file_path?: string
+  line_number?: number
+  rule_id?: string
+  project?: string
+  language?: string
+  branch?: string
+  // SCA fields
+  package_name?: string
+  package_version?: string
+  fixed_version?: string
+  dependency_type?: string
+  known_exploited?: boolean
+  // DAST fields
+  target_url?: string
+  parameter?: string
+  web_application_name?: string
+  plugin_id?: string
+}
+
+export type FindingSummaryWithCategory = FindingSummary & {
+  category_data?: FindingCategoryData
+}
