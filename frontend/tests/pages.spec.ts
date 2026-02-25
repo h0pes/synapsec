@@ -103,3 +103,76 @@ test.describe('Unmapped Apps', () => {
     await expect(page.getByText(/unmapped/i).first()).toBeVisible({ timeout: 5000 })
   })
 })
+
+test.describe('Attack Chains', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page)
+  })
+
+  test('displays attack chains page with applications', async ({ page }) => {
+    await page.getByRole('link', { name: /attack chains/i }).click()
+    await expect(page).toHaveURL(/\/attack-chains/)
+    await expect(page.getByRole('heading', { name: /attack chains/i })).toBeVisible({ timeout: 5000 })
+    // Should show the applications table
+    await expect(page.locator('table')).toBeVisible()
+  })
+})
+
+test.describe('Correlation', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page)
+  })
+
+  test('displays correlation page with rules', async ({ page }) => {
+    await page.getByRole('link', { name: /correlation/i }).click()
+    await expect(page).toHaveURL(/\/correlations/)
+    await expect(page.getByRole('heading', { name: /correlation engine/i })).toBeVisible({ timeout: 5000 })
+    // Check that Rules and Groups tabs are visible
+    await expect(page.getByRole('tab', { name: /rules/i })).toBeVisible()
+    await expect(page.getByRole('tab', { name: /groups/i })).toBeVisible()
+    // Rules tab is active by default and should show a table
+    await expect(page.locator('table').first()).toBeVisible({ timeout: 5000 })
+  })
+})
+
+test.describe('Deduplication', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page)
+  })
+
+  test('displays deduplication dashboard with stats', async ({ page }) => {
+    await page.getByRole('link', { name: /deduplication/i }).click()
+    await expect(page).toHaveURL(/\/deduplication/)
+    await expect(page.getByRole('heading', { name: /deduplication dashboard/i })).toBeVisible({ timeout: 5000 })
+    // Should show stat cards
+    await expect(page.getByText(/total duplicates/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(/pending review/i).first()).toBeVisible()
+  })
+})
+
+test.describe('Findings Tabs', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page)
+  })
+
+  test('switches between category tabs', async ({ page }) => {
+    await page.getByRole('link', { name: /findings/i }).first().click()
+    await expect(page).toHaveURL(/\/findings/)
+
+    // Click SAST tab
+    await page.getByRole('tab', { name: /sast/i }).click()
+    await expect(page).toHaveURL(/tab=sast/)
+
+    // Click SCA tab
+    await page.getByRole('tab', { name: /sca/i }).click()
+    await expect(page).toHaveURL(/tab=sca/)
+
+    // Click DAST tab
+    await page.getByRole('tab', { name: /dast/i }).click()
+    await expect(page).toHaveURL(/tab=dast/)
+
+    // Click All tab to go back — All tab clears the tab query param
+    await page.getByRole('tab', { name: /^all$/i }).click()
+    await expect(page).not.toHaveURL(/tab=/)
+  })
+})
