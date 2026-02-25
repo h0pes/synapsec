@@ -22,7 +22,7 @@ pub struct CorrelationRule {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateCorrelationRule {
     pub name: String,
     pub description: Option<String>,
@@ -32,7 +32,7 @@ pub struct CreateCorrelationRule {
     pub priority: Option<i32>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateCorrelationRule {
     pub name: Option<String>,
     pub description: Option<String>,

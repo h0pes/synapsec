@@ -22,6 +22,9 @@ CREATE TRIGGER update_correlation_rules_updated_at
     BEFORE UPDATE ON correlation_rules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE INDEX idx_correlation_rules_active ON correlation_rules(is_active) WHERE is_active;
+CREATE INDEX idx_correlation_rules_type ON correlation_rules(rule_type);
+
 -- ============================================================
 -- APP CODE PATTERNS TABLE
 -- ============================================================
@@ -41,6 +44,9 @@ CREATE TABLE app_code_patterns (
 CREATE TRIGGER update_app_code_patterns_updated_at
     BEFORE UPDATE ON app_code_patterns
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE INDEX idx_app_code_patterns_source_tool ON app_code_patterns(source_tool);
+CREATE INDEX idx_app_code_patterns_active ON app_code_patterns(is_active) WHERE is_active;
 
 -- ============================================================
 -- SEED: DEFAULT CORRELATION RULES (CR-1 through CR-6)
