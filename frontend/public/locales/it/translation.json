@@ -11,7 +11,8 @@
     "triage": "Coda di Triage",
     "unmapped": "App Non Mappate",
     "deduplication": "Deduplicazione",
-    "correlation": "Correlazione"
+    "correlation": "Correlazione",
+    "attack_chains": "Catene di Attacco"
   },
   "auth": {
     "login": "Accedi",
@@ -113,6 +114,37 @@
     "noFindings": "Nessun risultato trovato",
     "yes": "S\u00ec",
     "no": "No"
+  },
+  "attackChains": {
+    "title": "Catene di Attacco",
+    "applicationSingular": "applicazione",
+    "applicationPlural": "applicazioni",
+    "pageOf": "Pagina {{page}} di {{totalPages}}",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "columns": {
+      "application": "Applicazione",
+      "riskScore": "Punteggio di Rischio",
+      "attackChains": "Catene di Attacco",
+      "toolCoverage": "Copertura Strumenti",
+      "severity": "Gravit\u00e0",
+      "uncorrelated": "Non Correlati"
+    },
+    "detail": {
+      "notFound": "Applicazione non trovata",
+      "chainCount": "{{count}} catena/e di attacco",
+      "uncorrelatedCount": "{{count}} risultato/i non correlato/i",
+      "chainsTitle": "Catene di Attacco",
+      "uncorrelatedTitle": "Risultati Non Correlati",
+      "relationships": "{{count}} relazione/i",
+      "findings": "{{count}} risultato/i",
+      "columnTitle": "Titolo",
+      "columnSeverity": "Gravit\u00e0",
+      "columnCategory": "Categoria",
+      "columnSource": "Sorgente",
+      "columnStatus": "Stato",
+      "noData": "Nessuna catena di attacco o risultato trovato per questa applicazione"
+    }
   },
   "correlation": {
     "title": "Motore di Correlazione",

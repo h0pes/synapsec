@@ -115,6 +115,37 @@
     "yes": "Yes",
     "no": "No"
   },
+  "attackChains": {
+    "title": "Attack Chains",
+    "applicationSingular": "application",
+    "applicationPlural": "applications",
+    "pageOf": "Page {{page}} of {{totalPages}}",
+    "previous": "Previous",
+    "next": "Next",
+    "columns": {
+      "application": "Application",
+      "riskScore": "Risk Score",
+      "attackChains": "Attack Chains",
+      "toolCoverage": "Tool Coverage",
+      "severity": "Severity",
+      "uncorrelated": "Uncorrelated"
+    },
+    "detail": {
+      "notFound": "Application not found",
+      "chainCount": "{{count}} attack chain(s)",
+      "uncorrelatedCount": "{{count}} uncorrelated finding(s)",
+      "chainsTitle": "Attack Chains",
+      "uncorrelatedTitle": "Uncorrelated Findings",
+      "relationships": "{{count}} relationship(s)",
+      "findings": "{{count}} finding(s)",
+      "columnTitle": "Title",
+      "columnSeverity": "Severity",
+      "columnCategory": "Category",
+      "columnSource": "Source",
+      "columnStatus": "Status",
+      "noData": "No attack chains or findings found for this application"
+    }
+  },
   "correlation": {
     "title": "Correlation Engine",
     "tabs": {

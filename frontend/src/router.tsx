@@ -14,6 +14,9 @@ import { ApplicationDetailPage } from '@/pages/ApplicationDetailPage'
 import { IngestionPage } from '@/pages/IngestionPage'
 import { TriageQueuePage } from '@/pages/TriageQueuePage'
 import { UnmappedAppsPage } from '@/pages/UnmappedAppsPage'
+import { DeduplicationPage } from '@/pages/DeduplicationPage'
+import { AttackChainsPage } from '@/pages/AttackChainsPage'
+import { AttackChainDetailPage } from '@/pages/AttackChainDetailPage'
 import { authStore } from '@/stores/authStore'
 
 // Root route — wraps everything
@@ -106,6 +109,27 @@ const unmappedRoute = createRoute({
   component: UnmappedAppsPage,
 })
 
+// Deduplication
+const deduplicationRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/deduplication',
+  component: DeduplicationPage,
+})
+
+// Attack Chains list
+const attackChainsRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/attack-chains',
+  component: AttackChainsPage,
+})
+
+// Attack Chain detail (per application)
+const attackChainDetailRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/attack-chains/$appId',
+  component: AttackChainDetailPage,
+})
+
 // Build route tree
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -118,6 +142,9 @@ const routeTree = rootRoute.addChildren([
     ingestionRoute,
     triageRoute,
     unmappedRoute,
+    deduplicationRoute,
+    attackChainsRoute,
+    attackChainDetailRoute,
   ]),
 ])
 
