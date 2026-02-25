@@ -116,6 +116,14 @@ async fn main() -> anyhow::Result<()> {
         .route("/relationships", post(routes::correlation::create_relationship))
         .route("/relationships/{id}", delete(routes::correlation::delete_relationship));
 
+    // API v1 deduplication dashboard routes
+    let dedup_routes = Router::new()
+        .route("/deduplication/stats", get(routes::deduplication::stats))
+        .route("/deduplication/pending", get(routes::deduplication::pending))
+        .route("/deduplication/history", get(routes::deduplication::history))
+        .route("/deduplication/{relationship_id}/confirm", post(routes::deduplication::confirm))
+        .route("/deduplication/{relationship_id}/reject", post(routes::deduplication::reject));
+
     // API v1 dashboard routes
     let dashboard_routes = Router::new()
         .route("/dashboard/stats", get(routes::dashboard::stats));
@@ -130,6 +138,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", finding_routes)
         .nest("/api/v1", ingestion_routes)
         .nest("/api/v1", correlation_routes)
+        .nest("/api/v1", dedup_routes)
         .nest("/api/v1", dashboard_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
