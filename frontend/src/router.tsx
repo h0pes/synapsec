@@ -51,10 +51,17 @@ const dashboardRoute = createRoute({
 })
 
 // Findings list
+type FindingsSearchParams = {
+  tab?: string
+}
+
 const findingsRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/findings',
   component: FindingsPage,
+  validateSearch: (search: Record<string, unknown>): FindingsSearchParams => ({
+    tab: typeof search.tab === 'string' ? search.tab : undefined,
+  }),
 })
 
 // Finding detail

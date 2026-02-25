@@ -133,6 +133,7 @@ export type FindingFilters = {
   source_tool?: string
   sla_status?: SlaStatus
   search?: string
+  include_category_data?: boolean
 }
 
 export type FindingCategoryData = {

@@ -1,6 +1,7 @@
 import { apiGet, apiPost, apiPut, apiPatch } from './client'
 import type {
   FindingSummary,
+  FindingSummaryWithCategory,
   FindingDetail,
   FindingFilters,
   FindingHistory,
@@ -27,6 +28,28 @@ export function listFindings(
   if (filters.search) params.search = filters.search
 
   return apiGet<PagedResult<FindingSummary>>('/findings', params)
+}
+
+/** GET /findings — list findings with category-specific data included. */
+export function listFindingsWithCategory(
+  filters: FindingFilters = {},
+  page = 1,
+  perPage = 25,
+): Promise<PagedResult<FindingSummaryWithCategory>> {
+  const params: Record<string, string> = {
+    page: String(page),
+    per_page: String(perPage),
+    include_category_data: 'true',
+  }
+  if (filters.severity) params.severity = filters.severity
+  if (filters.status) params.status = filters.status
+  if (filters.category) params.category = filters.category
+  if (filters.application_id) params.application_id = filters.application_id
+  if (filters.source_tool) params.source_tool = filters.source_tool
+  if (filters.sla_status) params.sla_status = filters.sla_status
+  if (filters.search) params.search = filters.search
+
+  return apiGet<PagedResult<FindingSummaryWithCategory>>('/findings', params)
 }
 
 /** GET /findings/:id — get finding with category-specific details. */

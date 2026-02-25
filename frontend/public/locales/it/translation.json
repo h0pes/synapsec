@@ -9,7 +9,9 @@
     "applications": "Applicazioni",
     "ingestion": "Importazione",
     "triage": "Coda di Triage",
-    "unmapped": "App Non Mappate"
+    "unmapped": "App Non Mappate",
+    "deduplication": "Deduplicazione",
+    "correlation": "Correlazione"
   },
   "auth": {
     "login": "Accedi",
@@ -25,6 +27,123 @@
     "search": "Cerca",
     "filter": "Filtra",
     "loading": "Caricamento...",
-    "noResults": "Nessun risultato trovato"
+    "noResults": "Nessun risultato trovato",
+    "page": "Pagina",
+    "of": "di",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "finding": "risultato",
+    "findings": "risultati"
+  },
+  "dedup": {
+    "title": "Dashboard Deduplicazione",
+    "stats": {
+      "totalDuplicates": "Duplicati Totali",
+      "pendingReview": "In Attesa di Revisione",
+      "confirmed": "Confermati",
+      "rejected": "Rifiutati",
+      "totalIngestions": "Importazioni Totali",
+      "lastIngestion": "Ultima:"
+    },
+    "pending": {
+      "title": "In Attesa di Revisione",
+      "findingA": "Risultato A",
+      "findingB": "Risultato B",
+      "confidence": "Confidenza",
+      "created": "Creato",
+      "actions": "Azioni",
+      "noPending": "Nessuna revisione in sospeso",
+      "pair": "coppia",
+      "pairs": "coppie",
+      "unknown": "Sconosciuta"
+    },
+    "history": {
+      "title": "Decisioni Recenti",
+      "action": "Azione",
+      "field": "Campo",
+      "oldValue": "Vecchio Valore",
+      "newValue": "Nuovo Valore",
+      "actor": "Attore",
+      "date": "Data",
+      "noHistory": "Nessuna decisione registrata",
+      "decision": "decisione",
+      "decisions": "decisioni",
+      "system": "Sistema"
+    },
+    "actions": {
+      "confirm": "Conferma Duplicato",
+      "reject": "Rifiuta Duplicato"
+    },
+    "pagination": {
+      "page": "Pagina",
+      "of": "di",
+      "previous": "Precedente",
+      "next": "Successivo"
+    }
+  },
+  "findings": {
+    "tabs": {
+      "all": "Tutti",
+      "sast": "SAST",
+      "sca": "SCA",
+      "dast": "DAST"
+    },
+    "columns": {
+      "title": "Titolo",
+      "severity": "Gravit\u00e0",
+      "status": "Stato",
+      "category": "Categoria",
+      "source": "Sorgente",
+      "risk": "Rischio",
+      "firstSeen": "Prima Rilevazione",
+      "filePath": "Percorso File",
+      "lineNumber": "Riga",
+      "ruleId": "ID Regola",
+      "project": "Progetto",
+      "language": "Linguaggio",
+      "packageName": "Pacchetto",
+      "packageVersion": "Versione",
+      "fixedVersion": "Versione Corretta",
+      "dependencyType": "Tipo Dipendenza",
+      "knownExploited": "Exploit Noto",
+      "targetUrl": "URL Obiettivo",
+      "parameter": "Parametro",
+      "webAppName": "Applicazione Web"
+    },
+    "noFindings": "Nessun risultato trovato",
+    "yes": "S\u00ec",
+    "no": "No"
+  },
+  "correlation": {
+    "title": "Motore di Correlazione",
+    "tabs": {
+      "rules": "Regole",
+      "groups": "Gruppi"
+    },
+    "rules": {
+      "name": "Nome",
+      "type": "Tipo",
+      "confidence": "Confidenza",
+      "active": "Attiva",
+      "priority": "Priorit\u00e0",
+      "yes": "S\u00ec",
+      "no": "No"
+    },
+    "groups": {
+      "group": "Gruppo",
+      "members": "Membri",
+      "toolCoverage": "Copertura Strumenti",
+      "created": "Creato",
+      "memberFindings": "Risultati del Gruppo",
+      "findingTitle": "Titolo",
+      "severity": "Gravit\u00e0",
+      "category": "Categoria",
+      "sourceTool": "Strumento Sorgente",
+      "groupSingular": "gruppo",
+      "groupPlural": "gruppi",
+      "page": "Pagina",
+      "previous": "Precedente",
+      "next": "Successivo"
+    }
   }
 }

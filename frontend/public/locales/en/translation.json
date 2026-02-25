@@ -9,7 +9,10 @@
     "applications": "Applications",
     "ingestion": "Ingestion",
     "triage": "Triage Queue",
-    "unmapped": "Unmapped Apps"
+    "unmapped": "Unmapped Apps",
+    "deduplication": "Deduplication",
+    "correlation": "Correlation",
+    "attack_chains": "Attack Chains"
   },
   "auth": {
     "login": "Sign In",
@@ -25,6 +28,123 @@
     "search": "Search",
     "filter": "Filter",
     "loading": "Loading...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "page": "Page",
+    "of": "of",
+    "previous": "Previous",
+    "next": "Next",
+    "finding": "finding",
+    "findings": "findings"
+  },
+  "dedup": {
+    "title": "Deduplication Dashboard",
+    "stats": {
+      "totalDuplicates": "Total Duplicates",
+      "pendingReview": "Pending Review",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected",
+      "totalIngestions": "Total Ingestions",
+      "lastIngestion": "Last:"
+    },
+    "pending": {
+      "title": "Pending Review",
+      "findingA": "Finding A",
+      "findingB": "Finding B",
+      "confidence": "Confidence",
+      "created": "Created",
+      "actions": "Actions",
+      "noPending": "No pending reviews",
+      "pair": "pair",
+      "pairs": "pairs",
+      "unknown": "Unknown"
+    },
+    "history": {
+      "title": "Recent Decisions",
+      "action": "Action",
+      "field": "Field",
+      "oldValue": "Old Value",
+      "newValue": "New Value",
+      "actor": "Actor",
+      "date": "Date",
+      "noHistory": "No decisions recorded",
+      "decision": "decision",
+      "decisions": "decisions",
+      "system": "System"
+    },
+    "actions": {
+      "confirm": "Confirm Duplicate",
+      "reject": "Reject Duplicate"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "findings": {
+    "tabs": {
+      "all": "All",
+      "sast": "SAST",
+      "sca": "SCA",
+      "dast": "DAST"
+    },
+    "columns": {
+      "title": "Title",
+      "severity": "Severity",
+      "status": "Status",
+      "category": "Category",
+      "source": "Source",
+      "risk": "Risk",
+      "firstSeen": "First Seen",
+      "filePath": "File Path",
+      "lineNumber": "Line",
+      "ruleId": "Rule ID",
+      "project": "Project",
+      "language": "Language",
+      "packageName": "Package",
+      "packageVersion": "Version",
+      "fixedVersion": "Fixed Version",
+      "dependencyType": "Dependency Type",
+      "knownExploited": "Known Exploited",
+      "targetUrl": "Target URL",
+      "parameter": "Parameter",
+      "webAppName": "Web Application"
+    },
+    "noFindings": "No findings found",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "correlation": {
+    "title": "Correlation Engine",
+    "tabs": {
+      "rules": "Rules",
+      "groups": "Groups"
+    },
+    "rules": {
+      "name": "Name",
+      "type": "Type",
+      "confidence": "Confidence",
+      "active": "Active",
+      "priority": "Priority",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "groups": {
+      "group": "Group",
+      "members": "Members",
+      "toolCoverage": "Tool Coverage",
+      "created": "Created",
+      "memberFindings": "Member Findings",
+      "findingTitle": "Title",
+      "severity": "Severity",
+      "category": "Category",
+      "sourceTool": "Source Tool",
+      "groupSingular": "group",
+      "groupPlural": "groups",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next"
+    }
   }
 }
