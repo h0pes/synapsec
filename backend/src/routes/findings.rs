@@ -10,8 +10,8 @@ use crate::errors::{ApiResponse, AppError};
 use crate::middleware::auth::CurrentUser;
 use crate::middleware::rbac::{RequireAnalyst, RequireManager};
 use crate::models::finding::{
-    CreateComment, CreateFinding, Finding, FindingComment, FindingHistory, FindingSummary,
-    UpdateFinding,
+    CreateComment, CreateFinding, Finding, FindingComment, FindingHistory,
+    FindingSummaryWithCategory, UpdateFinding,
 };
 use crate::models::pagination::{PagedResult, Pagination};
 use crate::services::finding::{
@@ -21,12 +21,37 @@ use crate::services::finding::{
 use crate::AppState;
 
 /// GET /api/v1/findings — list findings with filters, pagination, and search.
+///
+/// Accepts `?include_category_data=true` to LEFT JOIN category tables
+/// (`finding_sast`, `finding_sca`, `finding_dast`) and include category-specific
+/// fields in each item. Without this parameter the response is backward-compatible
+/// with the original `FindingSummary` shape.
 pub async fn list(
     State(state): State<AppState>,
     Query(pagination): Query<Pagination>,
     Query(filters): Query<FindingFilters>,
-) -> Result<Json<ApiResponse<PagedResult<FindingSummary>>>, AppError> {
-    let result = finding_service::list(&state.db, &filters, &pagination).await?;
+) -> Result<Json<ApiResponse<PagedResult<FindingSummaryWithCategory>>>, AppError> {
+    let include_category = filters.include_category_data.unwrap_or(false);
+
+    let result = if include_category {
+        finding_service::list_with_category(&state.db, &filters, &pagination).await?
+    } else {
+        // Use the lightweight query without JOINs, then wrap results
+        let paged = finding_service::list(&state.db, &filters, &pagination).await?;
+        PagedResult::new(
+            paged
+                .items
+                .into_iter()
+                .map(|summary| FindingSummaryWithCategory {
+                    summary,
+                    category_data: None,
+                })
+                .collect(),
+            paged.total,
+            &pagination,
+        )
+    };
+
     Ok(ApiResponse::success(result))
 }
 

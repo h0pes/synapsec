@@ -197,6 +197,57 @@ pub struct FindingSummary {
     pub sla_status: Option<SlaStatus>,
 }
 
+/// Flattened category-specific fields for list views with category data.
+///
+/// Only the fields relevant to the finding's category will be populated;
+/// all others will be `None`. Uses `#[serde(skip_serializing_if)]` to keep
+/// responses compact.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct FindingCategoryData {
+    // SAST fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line_number: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<String>,
+
+    // SCA fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fixed_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dependency_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub known_exploited: Option<bool>,
+
+    // DAST fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameter: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub web_application_name: Option<String>,
+}
+
+/// Finding summary enriched with optional category-specific fields.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FindingSummaryWithCategory {
+    #[serde(flatten)]
+    pub summary: FindingSummary,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category_data: Option<FindingCategoryData>,
+}
+
 // -- Finding Relationships --
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -314,5 +365,146 @@ mod tests {
         let deserialized: CreateFinding = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized.source_tool, "sonarqube");
         assert_eq!(deserialized.cwe_ids, vec!["CWE-89"]);
+    }
+
+    #[test]
+    fn summary_with_category_backward_compatible_when_none() {
+        let now = Utc::now();
+        let summary = FindingSummary {
+            id: Uuid::nil(),
+            source_tool: "sonarqube".to_string(),
+            finding_category: FindingCategory::Sast,
+            title: "SQL Injection".to_string(),
+            normalized_severity: SeverityLevel::High,
+            status: FindingStatus::New,
+            composite_risk_score: Some(85.0),
+            fingerprint: "abc123".to_string(),
+            application_id: None,
+            first_seen: now,
+            last_seen: now,
+            sla_status: None,
+        };
+
+        let plain_json = serde_json::to_value(&summary).unwrap();
+
+        let with_category = FindingSummaryWithCategory {
+            summary: summary.clone(),
+            category_data: None,
+        };
+        let enriched_json = serde_json::to_value(&with_category).unwrap();
+
+        // When category_data is None, the serialized output must be identical
+        assert_eq!(plain_json, enriched_json);
+    }
+
+    #[test]
+    fn summary_with_category_includes_sast_data() {
+        let now = Utc::now();
+        let with_category = FindingSummaryWithCategory {
+            summary: FindingSummary {
+                id: Uuid::nil(),
+                source_tool: "sonarqube".to_string(),
+                finding_category: FindingCategory::Sast,
+                title: "XSS".to_string(),
+                normalized_severity: SeverityLevel::Medium,
+                status: FindingStatus::Confirmed,
+                composite_risk_score: None,
+                fingerprint: "def456".to_string(),
+                application_id: None,
+                first_seen: now,
+                last_seen: now,
+                sla_status: None,
+            },
+            category_data: Some(FindingCategoryData {
+                file_path: Some("src/main.rs".to_string()),
+                line_number: Some(42),
+                rule_id: Some("S1234".to_string()),
+                project: Some("my-project".to_string()),
+                language: Some("rust".to_string()),
+                branch: Some("main".to_string()),
+                ..Default::default()
+            }),
+        };
+
+        let json = serde_json::to_value(&with_category).unwrap();
+        let cat = &json["category_data"];
+        assert_eq!(cat["file_path"], "src/main.rs");
+        assert_eq!(cat["line_number"], 42);
+        assert_eq!(cat["rule_id"], "S1234");
+        // SCA/DAST fields must not appear
+        assert!(cat.get("package_name").is_none());
+        assert!(cat.get("target_url").is_none());
+    }
+
+    #[test]
+    fn summary_with_category_includes_sca_data() {
+        let now = Utc::now();
+        let with_category = FindingSummaryWithCategory {
+            summary: FindingSummary {
+                id: Uuid::nil(),
+                source_tool: "jfrog_xray".to_string(),
+                finding_category: FindingCategory::Sca,
+                title: "CVE-2024-1234".to_string(),
+                normalized_severity: SeverityLevel::Critical,
+                status: FindingStatus::New,
+                composite_risk_score: Some(95.0),
+                fingerprint: "ghi789".to_string(),
+                application_id: None,
+                first_seen: now,
+                last_seen: now,
+                sla_status: None,
+            },
+            category_data: Some(FindingCategoryData {
+                package_name: Some("log4j".to_string()),
+                package_version: Some("2.14.0".to_string()),
+                fixed_version: Some("2.17.1".to_string()),
+                dependency_type: Some("Direct".to_string()),
+                known_exploited: Some(true),
+                ..Default::default()
+            }),
+        };
+
+        let json = serde_json::to_value(&with_category).unwrap();
+        let cat = &json["category_data"];
+        assert_eq!(cat["package_name"], "log4j");
+        assert_eq!(cat["known_exploited"], true);
+        // SAST/DAST fields must not appear
+        assert!(cat.get("file_path").is_none());
+        assert!(cat.get("target_url").is_none());
+    }
+
+    #[test]
+    fn summary_with_category_includes_dast_data() {
+        let now = Utc::now();
+        let with_category = FindingSummaryWithCategory {
+            summary: FindingSummary {
+                id: Uuid::nil(),
+                source_tool: "tenable_was".to_string(),
+                finding_category: FindingCategory::Dast,
+                title: "Reflected XSS".to_string(),
+                normalized_severity: SeverityLevel::High,
+                status: FindingStatus::New,
+                composite_risk_score: None,
+                fingerprint: "jkl012".to_string(),
+                application_id: None,
+                first_seen: now,
+                last_seen: now,
+                sla_status: None,
+            },
+            category_data: Some(FindingCategoryData {
+                target_url: Some("https://example.com/search".to_string()),
+                parameter: Some("q".to_string()),
+                web_application_name: Some("ExampleApp".to_string()),
+                ..Default::default()
+            }),
+        };
+
+        let json = serde_json::to_value(&with_category).unwrap();
+        let cat = &json["category_data"];
+        assert_eq!(cat["target_url"], "https://example.com/search");
+        assert_eq!(cat["parameter"], "q");
+        // SAST/SCA fields must not appear
+        assert!(cat.get("file_path").is_none());
+        assert!(cat.get("package_name").is_none());
     }
 }

@@ -1,13 +1,14 @@
 //! Finding service: CRUD, search, status transitions, comments, and history.
 
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 use crate::errors::AppError;
 use crate::models::finding::{
-    CreateComment, CreateFinding, Finding, FindingCategory, FindingComment, FindingHistory,
-    FindingStatus, FindingSummary, SeverityLevel, SlaStatus, UpdateFinding,
+    CreateComment, CreateFinding, Finding, FindingCategory, FindingCategoryData, FindingComment,
+    FindingHistory, FindingStatus, FindingSummary, FindingSummaryWithCategory, SeverityLevel,
+    SlaStatus, UpdateFinding,
 };
 use crate::models::finding_dast::CreateFindingDast;
 use crate::models::finding_sast::CreateFindingSast;
@@ -43,6 +44,9 @@ pub struct FindingFilters {
     pub source_tool: Option<String>,
     pub sla_status: Option<SlaStatus>,
     pub search: Option<String>,
+    /// When true, LEFT JOINs category tables to include category-specific fields.
+    #[serde(default)]
+    pub include_category_data: Option<bool>,
 }
 
 /// Request body for status update.
@@ -384,6 +388,232 @@ pub async fn list(
 
     let total = count_query.fetch_one(pool).await?;
     let items = data_query.fetch_all(pool).await?;
+
+    Ok(PagedResult::new(items, total, pagination))
+}
+
+/// List findings with category-specific data included via LEFT JOINs.
+///
+/// When a category filter is set, only that category's table is joined.
+/// Otherwise all three category tables are joined.
+pub async fn list_with_category(
+    pool: &PgPool,
+    filters: &FindingFilters,
+    pagination: &Pagination,
+) -> Result<PagedResult<FindingSummaryWithCategory>, AppError> {
+    // Build WHERE conditions on the findings table (aliased as "f")
+    let mut conditions: Vec<String> = Vec::new();
+    let mut param_index = 0u32;
+
+    if filters.severity.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.normalized_severity = ${param_index}"));
+    }
+    if filters.status.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.status = ${param_index}"));
+    }
+    if filters.category.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.finding_category = ${param_index}"));
+    }
+    if filters.application_id.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.application_id = ${param_index}"));
+    }
+    if filters.source_tool.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.source_tool = ${param_index}"));
+    }
+    if filters.sla_status.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.sla_status = ${param_index}"));
+    }
+    if filters.search.is_some() {
+        param_index += 1;
+        conditions.push(format!(
+            "f.search_vector @@ plainto_tsquery('english', ${param_index})"
+        ));
+    }
+
+    let where_clause = if conditions.is_empty() {
+        String::new()
+    } else {
+        format!("WHERE {}", conditions.join(" AND "))
+    };
+
+    // Determine which category tables to JOIN based on the category filter
+    let join_sast = matches!(
+        filters.category,
+        None | Some(FindingCategory::Sast)
+    );
+    let join_sca = matches!(
+        filters.category,
+        None | Some(FindingCategory::Sca)
+    );
+    let join_dast = matches!(
+        filters.category,
+        None | Some(FindingCategory::Dast)
+    );
+
+    // Build JOIN clauses
+    let mut joins = String::new();
+    if join_sast {
+        joins.push_str(" LEFT JOIN finding_sast s ON s.finding_id = f.id");
+    }
+    if join_sca {
+        joins.push_str(" LEFT JOIN finding_sca sc ON sc.finding_id = f.id");
+    }
+    if join_dast {
+        joins.push_str(" LEFT JOIN finding_dast d ON d.finding_id = f.id");
+    }
+
+    // Build SELECT columns for category data
+    let mut extra_columns = String::new();
+    if join_sast {
+        extra_columns.push_str(
+            ", s.file_path AS sast_file_path, s.line_number_start AS sast_line_number, \
+             s.rule_id AS sast_rule_id, s.project AS sast_project, \
+             s.language AS sast_language, s.branch AS sast_branch",
+        );
+    }
+    if join_sca {
+        extra_columns.push_str(
+            ", sc.package_name AS sca_package_name, sc.package_version AS sca_package_version, \
+             sc.fixed_version AS sca_fixed_version, \
+             sc.dependency_type::text AS sca_dependency_type, \
+             sc.known_exploited AS sca_known_exploited",
+        );
+    }
+    if join_dast {
+        extra_columns.push_str(
+            ", d.target_url AS dast_target_url, d.parameter AS dast_parameter, \
+             d.web_application_name AS dast_web_application_name",
+        );
+    }
+
+    let count_sql = format!("SELECT COUNT(*) FROM findings f {joins} {where_clause}");
+    let data_sql = format!(
+        "SELECT f.id, f.source_tool, f.finding_category, f.title, f.normalized_severity, \
+         f.status, f.composite_risk_score, f.fingerprint, f.application_id, \
+         f.first_seen, f.last_seen, f.sla_status{extra_columns} \
+         FROM findings f {joins} {where_clause} \
+         ORDER BY f.composite_risk_score DESC NULLS LAST, f.normalized_severity ASC, f.first_seen DESC \
+         LIMIT {} OFFSET {}",
+        pagination.limit(),
+        pagination.offset()
+    );
+
+    let mut count_query = sqlx::query_scalar::<_, i64>(&count_sql);
+    let mut data_query = sqlx::query(&data_sql);
+
+    macro_rules! bind_both_cat {
+        ($val:expr) => {
+            count_query = count_query.bind($val);
+            data_query = data_query.bind($val);
+        };
+    }
+
+    if let Some(ref severity) = filters.severity {
+        bind_both_cat!(severity);
+    }
+    if let Some(ref status) = filters.status {
+        bind_both_cat!(status);
+    }
+    if let Some(ref category) = filters.category {
+        bind_both_cat!(category);
+    }
+    if let Some(ref app_id) = filters.application_id {
+        bind_both_cat!(app_id);
+    }
+    if let Some(ref tool) = filters.source_tool {
+        bind_both_cat!(tool);
+    }
+    if let Some(ref sla) = filters.sla_status {
+        bind_both_cat!(sla);
+    }
+    if let Some(ref search) = filters.search {
+        bind_both_cat!(search);
+    }
+
+    let total = count_query.fetch_one(pool).await?;
+    let rows = data_query.fetch_all(pool).await?;
+
+    let items: Vec<FindingSummaryWithCategory> = rows
+        .into_iter()
+        .map(|row| {
+            let finding_category: FindingCategory = row.get("finding_category");
+
+            let summary = FindingSummary {
+                id: row.get("id"),
+                source_tool: row.get("source_tool"),
+                finding_category: finding_category.clone(),
+                title: row.get("title"),
+                normalized_severity: row.get("normalized_severity"),
+                status: row.get("status"),
+                composite_risk_score: row.get("composite_risk_score"),
+                fingerprint: row.get("fingerprint"),
+                application_id: row.get("application_id"),
+                first_seen: row.get("first_seen"),
+                last_seen: row.get("last_seen"),
+                sla_status: row.get("sla_status"),
+            };
+
+            let category_data = match finding_category {
+                FindingCategory::Sast if join_sast => {
+                    // Only populate if the SAST join actually returned data
+                    let file_path: Option<String> = row.get("sast_file_path");
+                    if file_path.is_some() {
+                        Some(FindingCategoryData {
+                            file_path,
+                            line_number: row.get("sast_line_number"),
+                            rule_id: row.get("sast_rule_id"),
+                            project: row.get("sast_project"),
+                            language: row.get("sast_language"),
+                            branch: row.get("sast_branch"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                FindingCategory::Sca if join_sca => {
+                    let package_name: Option<String> = row.get("sca_package_name");
+                    if package_name.is_some() {
+                        Some(FindingCategoryData {
+                            package_name,
+                            package_version: row.get("sca_package_version"),
+                            fixed_version: row.get("sca_fixed_version"),
+                            dependency_type: row.get("sca_dependency_type"),
+                            known_exploited: row.get("sca_known_exploited"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                FindingCategory::Dast if join_dast => {
+                    let target_url: Option<String> = row.get("dast_target_url");
+                    if target_url.is_some() {
+                        Some(FindingCategoryData {
+                            target_url,
+                            parameter: row.get("dast_parameter"),
+                            web_application_name: row.get("dast_web_application_name"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            };
+
+            FindingSummaryWithCategory {
+                summary,
+                category_data,
+            }
+        })
+        .collect();
 
     Ok(PagedResult::new(items, total, pagination))
 }
