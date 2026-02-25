@@ -1,5 +1,9 @@
 # SynApSec — Application Security Orchestration and Correlation Platform
 
+## HARD RULES — NEVER VIOLATE
+1. **NO AI REFERENCES IN COMMITS** — Never include "Co-Authored-By", "Claude", "Anthropic", "AI-generated", "noreply@anthropic.com", or any AI tool reference in commit messages. No trailing signatures. Commit messages contain ONLY the conventional commit message itself.
+2. **NO SECRETS IN COMMITS** — No passwords, credentials, API keys, or certificates.
+
 ## Project Overview
 Enterprise ASOC platform unifying findings from SAST (SonarQube), SCA (JFrog Xray),
 and DAST (Tenable WAS) into a single pane of glass with deduplication, correlation,
