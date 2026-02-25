@@ -515,6 +515,62 @@ pub async fn delete_relationship(pool: &PgPool, relationship_id: Uuid) -> Result
 }
 
 // ---------------------------------------------------------------------------
+// Correlation density for risk scoring
+// ---------------------------------------------------------------------------
+
+/// Compute correlation density for a finding from its relationships.
+///
+/// Queries `finding_relationships` in both directions (source and target)
+/// to determine how many distinct tools and correlated findings are
+/// associated with the given finding. Returns a [`CorrelationInput`]
+/// suitable for the risk score computation pipeline.
+///
+/// When the finding has no relationships, returns a standalone input
+/// (distinct_tool_count = 1, correlated_finding_count = 0).
+pub async fn correlation_density_for_finding(
+    pool: &PgPool,
+    finding_id: Uuid,
+) -> Result<crate::services::risk_score::CorrelationInput, AppError> {
+    // Single query: collect distinct source_tool values across the finding
+    // itself and all its related findings, plus count of related findings.
+    let row = sqlx::query_as::<_, CorrelationDensityRow>(
+        r#"
+        WITH related_ids AS (
+            SELECT target_finding_id AS related_id
+            FROM finding_relationships
+            WHERE source_finding_id = $1
+            UNION
+            SELECT source_finding_id AS related_id
+            FROM finding_relationships
+            WHERE target_finding_id = $1
+        )
+        SELECT
+            (
+                SELECT COUNT(DISTINCT f.source_tool)
+                FROM findings f
+                WHERE f.id = $1 OR f.id IN (SELECT related_id FROM related_ids)
+            ) AS distinct_tool_count,
+            (
+                SELECT COUNT(DISTINCT related_id)
+                FROM related_ids
+            ) AS correlated_finding_count
+        "#,
+    )
+    .bind(finding_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(density_row_to_input(&row))
+}
+
+/// Row returned by the correlation density query.
+#[derive(Debug, sqlx::FromRow)]
+struct CorrelationDensityRow {
+    distinct_tool_count: Option<i64>,
+    correlated_finding_count: Option<i64>,
+}
+
+// ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
@@ -547,5 +603,104 @@ fn json_array_to_strings(value: &serde_json::Value) -> Vec<String> {
             .filter_map(|v| v.as_str().map(String::from))
             .collect(),
         _ => Vec::new(),
+    }
+}
+
+/// Convert a raw [`CorrelationDensityRow`] into a [`CorrelationInput`].
+///
+/// Encapsulates the fallback logic: a finding with no relationships
+/// still counts as 1 distinct tool (its own) and 0 correlated findings.
+fn density_row_to_input(row: &CorrelationDensityRow) -> crate::services::risk_score::CorrelationInput {
+    crate::services::risk_score::CorrelationInput {
+        distinct_tool_count: row.distinct_tool_count.unwrap_or(1) as u32,
+        correlated_finding_count: row.correlated_finding_count.unwrap_or(0) as u32,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn density_row_standalone_finding() {
+        // A finding with no relationships: DB returns 1 tool (its own), 0 correlated
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(1),
+            correlated_finding_count: Some(0),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 1);
+        assert_eq!(input.correlated_finding_count, 0);
+    }
+
+    #[test]
+    fn density_row_null_defaults() {
+        // Edge case: NULL from DB (shouldn't happen but handled gracefully)
+        let row = CorrelationDensityRow {
+            distinct_tool_count: None,
+            correlated_finding_count: None,
+        };
+        let input = density_row_to_input(&row);
+        // Defaults to standalone: 1 tool, 0 correlated
+        assert_eq!(input.distinct_tool_count, 1);
+        assert_eq!(input.correlated_finding_count, 0);
+    }
+
+    #[test]
+    fn density_row_two_tools() {
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(2),
+            correlated_finding_count: Some(1),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 2);
+        assert_eq!(input.correlated_finding_count, 1);
+    }
+
+    #[test]
+    fn density_row_multiple_same_tool() {
+        // Multiple findings from same tool (e.g., grouped_under)
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(1),
+            correlated_finding_count: Some(2),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 1);
+        assert_eq!(input.correlated_finding_count, 2);
+    }
+
+    #[test]
+    fn density_row_three_plus_tools() {
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(3),
+            correlated_finding_count: Some(4),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 3);
+        assert_eq!(input.correlated_finding_count, 4);
+    }
+
+    #[test]
+    fn density_row_three_plus_findings() {
+        // 3+ correlated findings even from 1 tool
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(1),
+            correlated_finding_count: Some(3),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 1);
+        assert_eq!(input.correlated_finding_count, 3);
+    }
+
+    #[test]
+    fn density_row_zero_values() {
+        // Explicit zero from DB (finding exists but has no relationships somehow)
+        let row = CorrelationDensityRow {
+            distinct_tool_count: Some(0),
+            correlated_finding_count: Some(0),
+        };
+        let input = density_row_to_input(&row);
+        assert_eq!(input.distinct_tool_count, 0);
+        assert_eq!(input.correlated_finding_count, 0);
     }
 }
