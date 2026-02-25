@@ -1,5 +1,6 @@
 //! Business logic services.
 
+pub mod app_code_resolver;
 pub mod application;
 pub mod auth;
 pub mod dashboard;
