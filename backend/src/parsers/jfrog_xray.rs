@@ -87,6 +87,13 @@ struct XrayRow {
     description: Option<String>,
     #[serde(default)]
     references: Vec<String>,
+    #[serde(default)]
+    project_keys: Vec<String>,
+    #[expect(dead_code, reason = "present in real Xray export, captured for completeness")]
+    applicability: Option<serde_json::Value>,
+    #[serde(default)]
+    #[expect(dead_code, reason = "present in real Xray export, captured for completeness")]
+    applicability_result: Option<String>,
 }
 
 /// CVE entry within an Xray row.
