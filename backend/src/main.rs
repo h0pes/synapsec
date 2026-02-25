@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 use mimalloc::MiMalloc;
@@ -106,6 +106,16 @@ async fn main() -> anyhow::Result<()> {
         .route("/ingestion/history", get(routes::ingestion::history))
         .route("/ingestion/{id}", get(routes::ingestion::get_log));
 
+    // API v1 correlation routes
+    let correlation_routes = Router::new()
+        .route("/correlations/groups", get(routes::correlation::list_groups))
+        .route("/correlations/groups/{id}", get(routes::correlation::get_group))
+        .route("/correlations/rules", get(routes::correlation::list_rules).post(routes::correlation::create_rule))
+        .route("/correlations/rules/{id}", put(routes::correlation::update_rule))
+        .route("/correlations/run/{app_id}", post(routes::correlation::run_correlation))
+        .route("/relationships", post(routes::correlation::create_relationship))
+        .route("/relationships/{id}", delete(routes::correlation::delete_relationship));
+
     // API v1 dashboard routes
     let dashboard_routes = Router::new()
         .route("/dashboard/stats", get(routes::dashboard::stats));
@@ -119,6 +129,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", app_routes)
         .nest("/api/v1", finding_routes)
         .nest("/api/v1", ingestion_routes)
+        .nest("/api/v1", correlation_routes)
         .nest("/api/v1", dashboard_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())

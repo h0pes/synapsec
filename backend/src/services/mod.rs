@@ -4,6 +4,7 @@ pub mod app_code_resolver;
 pub mod application;
 pub mod auth;
 pub mod correlation;
+pub mod correlation_service;
 pub mod cross_dedup;
 pub mod dashboard;
 pub mod deduplication;

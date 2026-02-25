@@ -2,6 +2,7 @@
 
 pub mod applications;
 pub mod auth;
+pub mod correlation;
 pub mod dashboard;
 pub mod findings;
 pub mod health;
