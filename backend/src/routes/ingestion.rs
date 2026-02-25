@@ -54,7 +54,7 @@ pub async fn upload(
                 parser_type = Some(serde_json::from_value(serde_json::Value::String(text.clone()))
                     .map_err(|_| {
                         AppError::Validation(format!(
-                            "Invalid parser_type '{text}'. Supported: sonarqube, sarif"
+                            "Invalid parser_type '{text}'. Supported: sonarqube, sarif, jfrog_xray, tenable_was"
                         ))
                     })?);
             }

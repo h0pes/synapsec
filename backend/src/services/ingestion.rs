@@ -54,6 +54,10 @@ pub struct IngestionUpload {
 pub enum ParserType {
     Sonarqube,
     Sarif,
+    #[serde(rename = "jfrog_xray")]
+    JfrogXray,
+    #[serde(rename = "tenable_was")]
+    TenableWas,
 }
 
 impl std::fmt::Display for ParserType {
@@ -61,6 +65,8 @@ impl std::fmt::Display for ParserType {
         match self {
             Self::Sonarqube => write!(f, "sonarqube"),
             Self::Sarif => write!(f, "sarif"),
+            Self::JfrogXray => write!(f, "jfrog_xray"),
+            Self::TenableWas => write!(f, "tenable_was"),
         }
     }
 }
@@ -118,6 +124,8 @@ pub async fn ingest_file(
     let parser: Box<dyn Parser> = match parser_type {
         ParserType::Sonarqube => Box::new(SonarQubeParser::new()),
         ParserType::Sarif => Box::new(SarifParser::new()),
+        ParserType::JfrogXray => Box::new(crate::parsers::jfrog_xray::JfrogXrayParser::new()),
+        ParserType::TenableWas => Box::new(crate::parsers::tenable_was::TenableWasParser::new()),
     };
 
     // 2. Parse raw data
@@ -342,6 +350,20 @@ mod tests {
 
         let sarif: ParserType = serde_json::from_str("\"sarif\"").unwrap();
         assert_eq!(sarif, ParserType::Sarif);
+    }
+
+    #[test]
+    fn parser_type_jfrog_xray() {
+        let pt: ParserType = serde_json::from_str("\"jfrog_xray\"").unwrap();
+        assert_eq!(pt, ParserType::JfrogXray);
+        assert_eq!(pt.to_string(), "jfrog_xray");
+    }
+
+    #[test]
+    fn parser_type_tenable_was() {
+        let pt: ParserType = serde_json::from_str("\"tenable_was\"").unwrap();
+        assert_eq!(pt, ParserType::TenableWas);
+        assert_eq!(pt.to_string(), "tenable_was");
     }
 
     #[test]
