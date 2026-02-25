@@ -9,6 +9,9 @@ import {
   AlertCircle,
   Shield,
   ChevronLeft,
+  Link2,
+  Copy,
+  GitCompareArrows,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -20,12 +23,20 @@ type NavItem = {
   icon: React.ElementType
 }
 
-const NAV_ITEMS: NavItem[] = [
+/** Above-the-line: daily analyst workflow. */
+const PRIMARY_NAV: NavItem[] = [
   { labelKey: 'nav.dashboard', path: '/', icon: LayoutDashboard },
   { labelKey: 'nav.findings', path: '/findings', icon: Search },
   { labelKey: 'nav.applications', path: '/applications', icon: Building2 },
-  { labelKey: 'nav.ingestion', path: '/ingestion', icon: Upload },
+  { labelKey: 'nav.attack_chains', path: '/attack-chains', icon: Link2 },
   { labelKey: 'nav.triage', path: '/triage', icon: ListChecks },
+]
+
+/** Below-the-line: pipeline operations & data quality. */
+const SECONDARY_NAV: NavItem[] = [
+  { labelKey: 'nav.ingestion', path: '/ingestion', icon: Upload },
+  { labelKey: 'nav.deduplication', path: '/deduplication', icon: Copy },
+  { labelKey: 'nav.correlation', path: '/correlations', icon: GitCompareArrows },
   { labelKey: 'nav.unmapped', path: '/unmapped', icon: AlertCircle },
 ]
 
@@ -38,6 +49,34 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { t } = useTranslation()
   const router = useRouter()
   const currentPath = useRouterState({ select: (s) => s.location.pathname })
+
+  function renderNavItem(item: NavItem) {
+    const active =
+      item.path === '/'
+        ? currentPath === '/'
+        : currentPath.startsWith(item.path)
+    return (
+      <a
+        key={item.path}
+        href={item.path}
+        onClick={(e) => {
+          e.preventDefault()
+          router.navigate({ to: item.path })
+        }}
+        className={cn(
+          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          active
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+          collapsed && 'justify-center px-2',
+        )}
+        title={collapsed ? t(item.labelKey) : undefined}
+      >
+        <item.icon className="h-4 w-4 shrink-0" />
+        {!collapsed && <span>{t(item.labelKey)}</span>}
+      </a>
+    )
+  }
 
   return (
     <aside
@@ -59,34 +98,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <Separator />
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-2 py-3">
-        {NAV_ITEMS.map((item) => {
-          const active =
-            item.path === '/'
-              ? currentPath === '/'
-              : currentPath.startsWith(item.path)
-          return (
-            <a
-              key={item.path}
-              href={item.path}
-              onClick={(e) => {
-                e.preventDefault()
-                router.navigate({ to: item.path })
-              }}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                active
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
-                collapsed && 'justify-center px-2',
-              )}
-              title={collapsed ? t(item.labelKey) : undefined}
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{t(item.labelKey)}</span>}
-            </a>
-          )
-        })}
+      <nav className="flex-1 px-2 py-3">
+        {/* Primary: analyst workflow */}
+        <div className="space-y-1">
+          {PRIMARY_NAV.map(renderNavItem)}
+        </div>
+
+        {/* Separator between primary and secondary */}
+        <Separator className="my-3" />
+
+        {/* Secondary: pipeline operations */}
+        <div className="space-y-1">
+          {SECONDARY_NAV.map(renderNavItem)}
+        </div>
       </nav>
 
       {/* Collapse toggle */}

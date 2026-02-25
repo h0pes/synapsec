@@ -15,6 +15,7 @@ import { IngestionPage } from '@/pages/IngestionPage'
 import { TriageQueuePage } from '@/pages/TriageQueuePage'
 import { UnmappedAppsPage } from '@/pages/UnmappedAppsPage'
 import { DeduplicationPage } from '@/pages/DeduplicationPage'
+import { CorrelationPage } from '@/pages/CorrelationPage'
 import { AttackChainsPage } from '@/pages/AttackChainsPage'
 import { AttackChainDetailPage } from '@/pages/AttackChainDetailPage'
 import { authStore } from '@/stores/authStore'
@@ -116,6 +117,13 @@ const deduplicationRoute = createRoute({
   component: DeduplicationPage,
 })
 
+// Correlation
+const correlationRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/correlations',
+  component: CorrelationPage,
+})
+
 // Attack Chains list
 const attackChainsRoute = createRoute({
   getParentRoute: () => layoutRoute,
@@ -143,6 +151,7 @@ const routeTree = rootRoute.addChildren([
     triageRoute,
     unmappedRoute,
     deduplicationRoute,
+    correlationRoute,
     attackChainsRoute,
     attackChainDetailRoute,
   ]),
