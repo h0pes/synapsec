@@ -134,6 +134,11 @@ export function apiPatch<T>(path: string, body: unknown): Promise<T> {
   })
 }
 
+/** DELETE request. */
+export function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, { method: 'DELETE' })
+}
+
 /** POST request with FormData (multipart upload). */
 export function apiUpload<T>(path: string, formData: FormData): Promise<T> {
   return request<T>(path, {
