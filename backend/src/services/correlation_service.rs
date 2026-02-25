@@ -378,9 +378,9 @@ pub async fn run_for_application(
             fd.parameter,
             fc.package_name
         FROM findings f
-        LEFT JOIN findings_sast fs ON fs.finding_id = f.id
-        LEFT JOIN findings_dast fd ON fd.finding_id = f.id
-        LEFT JOIN findings_sca fc ON fc.finding_id = f.id
+        LEFT JOIN finding_sast fs ON fs.finding_id = f.id
+        LEFT JOIN finding_dast fd ON fd.finding_id = f.id
+        LEFT JOIN finding_sca fc ON fc.finding_id = f.id
         WHERE f.application_id = $1
         "#,
     )
