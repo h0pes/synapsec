@@ -45,7 +45,7 @@ function parseTab(raw: string | undefined): TabValue {
 export function FindingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const searchParams = useSearch({ from: '/findings' }) as { tab?: string }
+  const searchParams = useSearch({ strict: false }) as { tab?: string }
   const activeTab = parseTab(searchParams.tab)
 
   const [findings, setFindings] = useState<FindingSummary[]>([])
