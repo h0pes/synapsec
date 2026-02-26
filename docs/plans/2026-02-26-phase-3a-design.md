@@ -12,7 +12,7 @@ sub-phases; this is the first.
 |-----------|-------|
 | **3a (this)** | Graph visualization + UI redesign + category filters + data export + dashboard charts |
 | 3b | Governance workflows + reporting + analytics |
-| 3c | Enterprise SSO (SAML/OIDC) + SBOM import/analysis |
+| 3c | MFA + Enterprise SSO (SAML/OIDC) + SBOM import/analysis |
 
 ## Approach
 
@@ -27,7 +27,7 @@ most complex piece), then do the full UI redesign pass. The graph's visual langu
 | Graph visualization | React Flow v12 | Purpose-built for node-edge diagrams, MIT, React-native, works with TailwindCSS |
 | Charts/analytics | Recharts | Most popular React chart lib, composable, easy to theme |
 | Table filtering | TanStack Table column filters | Native feature, Excel-like inline filters per column header |
-| Export format | CSV | Universal, opens in Excel. PDF deferred to 3b |
+| Export format | CSV + JSON | CSV universal (Excel), JSON for programmatic use. PDF reports deferred to 3b |
 
 ---
 
@@ -176,20 +176,24 @@ params are present. No performance impact when filters are unused.
 
 ### UX
 
-One **"Export CSV"** button in the Findings page header (next to the findings count).
+**"Export"** dropdown button in the Findings page header (next to the findings count)
+with format options: **CSV** and **JSON**.
 
 ### Behavior
 
 - Downloads **all findings matching current filters** (ignores pagination)
-- On **category tabs**: CSV includes all category-specific fields (full detailed record)
-- On **"All" tab**: CSV includes common cross-category fields
+- **Format options:** CSV (universal, opens in Excel) or JSON (structured, programmatic use)
+- On **category tabs**: export includes all category-specific fields (full detailed record)
+- On **"All" tab**: export includes common cross-category fields
 - Streaming response for large datasets
 
 ### Backend
 
 New endpoint: `GET /api/v1/findings/export`
-- Accepts same filter params as the list endpoint + `category` param
-- Returns `Content-Type: text/csv` with `Content-Disposition: attachment; filename=...`
+- Accepts same filter params as the list endpoint + `category` and `format` params
+- `format=csv`: Returns `Content-Type: text/csv`
+- `format=json`: Returns `Content-Type: application/json`
+- Both set `Content-Disposition: attachment; filename=...`
 - Streams rows to avoid memory issues with large result sets
 
 ---
@@ -221,6 +225,9 @@ counts grouped by `source_tool`.
 
 ## 5. Full UI Redesign Pass
 
+> **Tooling:** Leverage the `frontend-design` plugin during implementation for generating
+> distinctive, production-grade UI components.
+
 ### Design System Foundation
 
 - **Color palette:** Custom semantic colors (not default shadcn/ui gray). Category
@@ -243,13 +250,20 @@ counts grouped by `source_tool`.
 
 ### Pages Touched
 
-All existing pages receive the redesign:
-- Dashboard, Findings, Finding Detail
-- Applications, Application Detail
-- Attack Chains (graph + card views)
-- Correlation, Deduplication
-- Ingestion, Triage Queue, Unmapped Apps
-- Login page
+**Every page in the application** receives the redesign (13 pages total):
+- Login
+- Dashboard
+- Findings (with category tabs)
+- Finding Detail
+- Applications
+- Application Detail
+- Ingestion
+- Triage Queue
+- Unmapped Apps
+- Deduplication
+- Correlation
+- Attack Chains List
+- Attack Chain Detail (graph + card views)
 
 ### Accessibility
 
@@ -265,9 +279,10 @@ WCAG 2.1 Level AA:
 
 | Scanner | Import Format | Export from Findings |
 |---------|--------------|-------------------|
-| SonarQube (SAST) | CSV | CSV |
-| JFrog Xray (SCA) | JSON | CSV |
-| Tenable WAS (DAST) | CSV | CSV |
+| SonarQube (SAST) | CSV | CSV, JSON |
+| JFrog Xray (SCA) | JSON | CSV, JSON |
+| Tenable WAS (DAST) | CSV | CSV, JSON |
+| SARIF (generic SAST) | SARIF 2.1.0 | CSV, JSON |
 
 ---
 
@@ -277,8 +292,10 @@ Deferred to later sub-phases:
 - Risk governance workflows (Risk_Accepted, Deferred_Remediation) → 3b
 - Executive reporting, PDF export, scheduled reports → 3b
 - Trend analysis / time-series charts → 3b
+- MFA authentication → 3c
 - Enterprise SSO (SAML/OIDC) → 3c
 - SBOM import and analysis → 3c
+- SARIF export format (export findings as SARIF 2.1.0) → 3b
 - Remediation guidance templates → 3b
 - Bulk historical data import → 3b
 - Advanced correlation rules → 3b
