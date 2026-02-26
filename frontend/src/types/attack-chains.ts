@@ -28,9 +28,18 @@ export type ChainFinding = {
   status: string
 }
 
+export type ChainRelationship = {
+  id: string
+  source_finding_id: string
+  target_finding_id: string
+  relationship_type: string
+  confidence: string | null
+}
+
 export type AttackChain = {
   group_id: string
   findings: ChainFinding[]
+  relationships: ChainRelationship[]
   tool_coverage: string[]
   max_severity: string
   relationship_count: number
