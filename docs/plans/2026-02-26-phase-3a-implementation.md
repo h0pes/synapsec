@@ -6,7 +6,7 @@
 
 **Architecture:** Graph-First, Then Polish. Build the React Flow attack chain graph first (hardest piece), then category tables with inline filters, export, dashboard charts, and finally a comprehensive UI redesign pass using the `frontend-design` plugin. Backend changes (seed data, API extensions, export endpoint) come first to unblock frontend work.
 
-**Tech Stack:** Rust/Axum (backend), React 19 + TypeScript (frontend), React Flow v12 (`@xyflow/react`), dagre (`@dagrejs/dagre`), Recharts, TanStack Table v8 column filters, TailwindCSS v4, shadcn/ui.
+**Tech Stack:** Rust/Axum (backend), React 19 + TypeScript (frontend), React Flow v12 (`@xyflow/react`), dagre (`@dagrejs/dagre`), Recharts, TanStack Table v8 column filters, TailwindCSS v4, shadcn/ui. **All new dependencies must be pinned to the latest stable version at time of installation — no exceptions.**
 
 **Design doc:** `docs/plans/2026-02-26-phase-3a-design.md`
 
