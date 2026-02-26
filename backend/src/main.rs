@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 use mimalloc::MiMalloc;
@@ -106,9 +106,32 @@ async fn main() -> anyhow::Result<()> {
         .route("/ingestion/history", get(routes::ingestion::history))
         .route("/ingestion/{id}", get(routes::ingestion::get_log));
 
+    // API v1 correlation routes
+    let correlation_routes = Router::new()
+        .route("/correlations/groups", get(routes::correlation::list_groups))
+        .route("/correlations/groups/{id}", get(routes::correlation::get_group))
+        .route("/correlations/rules", get(routes::correlation::list_rules).post(routes::correlation::create_rule))
+        .route("/correlations/rules/{id}", put(routes::correlation::update_rule))
+        .route("/correlations/run/{app_id}", post(routes::correlation::run_correlation))
+        .route("/relationships", post(routes::correlation::create_relationship))
+        .route("/relationships/{id}", delete(routes::correlation::delete_relationship));
+
+    // API v1 deduplication dashboard routes
+    let dedup_routes = Router::new()
+        .route("/deduplication/stats", get(routes::deduplication::stats))
+        .route("/deduplication/pending", get(routes::deduplication::pending))
+        .route("/deduplication/history", get(routes::deduplication::history))
+        .route("/deduplication/{relationship_id}/confirm", post(routes::deduplication::confirm))
+        .route("/deduplication/{relationship_id}/reject", post(routes::deduplication::reject));
+
     // API v1 dashboard routes
     let dashboard_routes = Router::new()
         .route("/dashboard/stats", get(routes::dashboard::stats));
+
+    // API v1 attack chain routes
+    let attack_chain_routes = Router::new()
+        .route("/attack-chains", get(routes::attack_chains::list))
+        .route("/attack-chains/{app_id}", get(routes::attack_chains::get_by_app));
 
     let app = Router::new()
         // Health endpoints (no auth required)
@@ -119,7 +142,10 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/v1", app_routes)
         .nest("/api/v1", finding_routes)
         .nest("/api/v1", ingestion_routes)
+        .nest("/api/v1", correlation_routes)
+        .nest("/api/v1", dedup_routes)
         .nest("/api/v1", dashboard_routes)
+        .nest("/api/v1", attack_chain_routes)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())

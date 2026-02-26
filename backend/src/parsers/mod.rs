@@ -3,8 +3,10 @@
 //! Each parser implements the `Parser` trait, producing normalized
 //! `ParsedFinding` records from tool-specific formats (JSON, CSV, XML, SARIF).
 
+pub mod jfrog_xray;
 pub mod sarif;
 pub mod sonarqube;
+pub mod tenable_was;
 
 use crate::models::finding::{CreateFinding, FindingCategory, SeverityLevel};
 use crate::services::finding::CategoryData;

@@ -6,12 +6,12 @@
 
 **Architecture:** Rust/Axum REST API backend with SQLx for PostgreSQL access, React/TypeScript/Vite frontend with TailwindCSS/shadcn/ui, Nginx reverse proxy, all running via Docker Compose with HTTPS everywhere (mkcert). Monorepo structure with `/backend`, `/frontend`, `/docker`, `/docs` directories.
 
-**Tech Stack:**
-- Backend: Rust, Axum, SQLx, Tower, Tokio, Serde, argon2 (password hashing), jsonwebtoken
-- Frontend: React 18+, TypeScript, Vite, TailwindCSS, shadcn/ui, react-i18next, TanStack Table, TanStack Router
+**Tech Stack:** *(updated 2026-02-22 to reflect actual versions)*
+- Backend: Rust, Axum 0.8, axum-extra 0.12, axum-server 0.8 (tls-rustls), SQLx 0.8, Tower 0.5, Tokio, Serde, argon2 0.5, jsonwebtoken 10, rustls 0.23 (aws_lc_rs), mimalloc
+- Frontend: React 19, TypeScript (strict), Vite 7.3, TailwindCSS v4, shadcn/ui, react-i18next, TanStack Table, TanStack Router
 - Database: PostgreSQL 16+ (JSONB, full-text search, GIN indexes)
 - Infrastructure: Docker Compose, Nginx, mkcert, Redis
-- Testing: Rust — cargo test, sqlx-test; Frontend — Vitest, React Testing Library, Playwright (e2e)
+- Testing: Rust — cargo test; Frontend — Playwright (e2e, Firefox). Vitest/RTL planned but not yet configured.
 
 **Reference Documents:**
 - `docs/ASOC_PRD_v1.md` — Original PRD
@@ -19,6 +19,187 @@
 - `docs/ASOC_Market_Research_v1.md` — Market research
 
 **Phase 1 Exit Criteria:** SonarQube findings ingested via file import, deduplicated, browsable, and manageable through UI and API. State machine fully operational.
+
+---
+
+## Post-Implementation Amendments (2026-02-22)
+
+> This section documents all divergences between the original plan and the actual implemented codebase. Phase 2 planning should reference this section for the accurate state of the system.
+
+### A1. Dependency Version Changes
+
+The following crate versions were updated to their latest stable releases during implementation:
+
+| Crate | Plan Version | Actual Version | Notes |
+|-------|-------------|----------------|-------|
+| axum-extra | 0.10 | **0.12** | Latest compatible with Axum 0.8 |
+| jsonwebtoken | 9 | **10** | Features: `rust_crypto` (replaces default openssl) |
+| redis | 0.27 | **1** | Major version bump |
+| validator | 0.19 | **0.20** | Latest stable |
+| quick-xml | 0.37 | **0.39** | Latest stable |
+| reqwest (dev) | 0.12 | **0.13** | Added `multipart` feature |
+
+### A2. New Dependencies (Not in Original Plan)
+
+| Crate | Version | Purpose |
+|-------|---------|---------|
+| axum-server | 0.8 | HTTPS/TLS server binding (features: `tls-rustls`) |
+| rustls | 0.23 | TLS provider (features: `aws_lc_rs`, `std`, `tls12`; default-features disabled) |
+| mimalloc | 0.1 | Global allocator per M-MIMALLOC-APP guideline |
+| calamine | 0.33 | Excel file parsing (replaces planned `xlsx` reference) |
+| @playwright/test | 1.58 | Frontend E2E testing (devDependency) |
+
+### A3. HTTPS for Local Development (Backend)
+
+The plan's `main.rs` used plain `axum::serve()`. The actual implementation adds mandatory HTTPS:
+
+- `AppConfig` includes `tls_cert_path: Option<String>` and `tls_key_path: Option<String>`
+- `main.rs` installs the rustls crypto provider at startup: `rustls::crypto::aws_lc_rs::default_provider().install_default()`
+- When TLS paths are configured, uses `axum_server::bind_rustls()` instead of `axum::serve()`
+- Falls back to HTTP with a warning if TLS paths are not set
+- Backend `.env` includes: `TLS_CERT_PATH=../docker/nginx/certs/localhost+2.pem` and `TLS_KEY_PATH=../docker/nginx/certs/localhost+2-key.pem`
+
+### A4. Database Naming Conventions
+
+The plan used generic credentials. The actual implementation follows explicit naming:
+
+| Setting | Plan | Actual |
+|---------|------|--------|
+| POSTGRES_DB | `synapsec` | `synapsec_dev` |
+| POSTGRES_USER | `synapsec` | `synapsec_user` |
+| POSTGRES_PASSWORD | `synapsec_dev` | `synapsec_dev_password` |
+| DATABASE_URL | `postgresql://synapsec:synapsec_dev@...` | `postgresql://synapsec_user:synapsec_dev_password@...` |
+| Test database | (not specified) | `synapsec_test` (created by `docker/postgres/init.sql`) |
+
+The `docker/postgres/init.sql` also creates the `synapsec_test` database and installs extensions on both databases.
+
+### A5. Enum Serde Serialization Renames
+
+All Rust enums now have explicit `#[serde(rename = "...")]` annotations to match the PostgreSQL enum values and frontend TypeScript types:
+
+- **FindingCategory**: `#[serde(rename_all = "SCREAMING_SNAKE_CASE")]` — `Sast` → `"SAST"`, `Sca` → `"SCA"`, `Dast` → `"DAST"`
+- **FindingStatus**: Individual renames — `InRemediation` → `"In_Remediation"`, `FalsePositiveRequested` → `"False_Positive_Requested"`, etc.
+- **SlaStatus**: `OnTrack` → `"On_Track"`, `AtRisk` → `"At_Risk"`
+- **AssetCriticality**: `VeryHigh` → `"Very_High"`, `MediumHigh` → `"Medium_High"`, `MediumLow` → `"Medium_Low"`
+- **AssetTier**: `Tier1` → `"Tier_1"`, `Tier2` → `"Tier_2"`, `Tier3` → `"Tier_3"`
+- **ExposureLevel**: `InternetFacing` → `"Internet_Facing"`, `DevTest` → `"Dev_Test"`
+
+### A6. Dashboard Stats Endpoint (Added)
+
+Not in the original plan. Implemented to support the DashboardPage:
+
+- **Route**: `GET /api/v1/dashboard/stats` (requires authentication)
+- **Backend files**: `routes/dashboard.rs`, `services/dashboard.rs`
+- **Frontend files**: `api/dashboard.ts`
+- **Response shape** (`DashboardStats`):
+  ```json
+  {
+    "triage_count": 5,
+    "unmapped_apps_count": 2,
+    "severity_counts": { "Critical": 1, "High": 3, "Medium": 8, "Low": 2, "Info": 0 },
+    "sla_summary": { "on_track": 10, "at_risk": 3, "breached": 1 },
+    "recent_ingestions": [...],
+    "top_risky_apps": [...]
+  }
+  ```
+- Uses 6 parallel SQL queries via `tokio::try_join!`
+
+### A7. Pagination Model
+
+The plan did not specify exact pagination parameters. The actual implementation (`models/pagination.rs`):
+
+- **Query params**: `page` (i64, default=1), `per_page` (i64, default=25, max=100)
+- **Response envelope** (`PagedResult<T>`):
+  ```json
+  {
+    "items": [...],
+    "total": 42,
+    "page": 1,
+    "per_page": 25,
+    "total_pages": 2
+  }
+  ```
+- Used by: ingestion history, findings list, applications list
+
+### A8. Ingestion Response Alignment
+
+The `IngestionResult` struct was modified for frontend compatibility:
+
+- `ingestion_id` field serializes as `"ingestion_log_id"` via `#[serde(rename)]`
+- Added fields: `duplicates`, `quarantined`, `reopened_findings`
+- `error_count` field serializes as `"errors"` (number) via `#[serde(rename)]`
+- `error_details` added as separate `Vec<IngestionError>`
+- Ingestion status stored as `'Completed'` (PascalCase), not `'completed'`
+
+### A9. Frontend Logout Flow
+
+The plan did not detail the logout implementation. The actual `useAuth.ts`:
+
+- Calls `apiLogout()` (fire-and-forget to clear server session)
+- Calls `authStore.logout()` to clear client state
+- Redirects via `window.location.href = '/login'` (hard navigation, not router)
+
+### A10. CORS Configuration
+
+The plan's CORS setup used `Any` wildcards. The actual implementation uses explicit values because `allow_credentials(true)` is incompatible with wildcards:
+
+- `allow_methods`: `[GET, POST, PUT, PATCH, DELETE]`
+- `allow_headers`: `[Content-Type, Authorization, Accept]`
+
+### A11. Playwright E2E Test Suite
+
+Not detailed in the original plan. Implemented with:
+
+- **Config**: `frontend/playwright.config.ts` — Firefox browser, HTTPS (`ignoreHTTPSErrors: true`), `baseURL: https://localhost:5173`, serial execution (workers=1)
+- **Test files**:
+  - `frontend/tests/auth.spec.ts` — 4 tests: login page visibility, valid login redirect, invalid credentials error, logout redirect
+  - `frontend/tests/pages.spec.ts` — 8 tests: dashboard stats, findings list + detail, applications list + detail, ingestion page + history, triage queue, unmapped apps
+- **Makefile**: Added `test-e2e` target (`cd frontend && npx playwright test`)
+- All 12 tests passing
+
+### A12. Additional Files Not in Plan
+
+| File | Purpose |
+|------|---------|
+| `backend/src/models/pagination.rs` | Shared pagination query/response types |
+| `backend/src/routes/dashboard.rs` | Dashboard stats route handler |
+| `backend/src/services/dashboard.rs` | Dashboard aggregate queries |
+| `backend/src/bin/seed.rs` | Development seed data binary |
+| `frontend/src/api/dashboard.ts` | Dashboard API client |
+| `frontend/src/components/findings/SeverityBadge.tsx` | Severity level badge component |
+| `frontend/src/components/layout/LanguageToggle.tsx` | i18n language switcher |
+| `frontend/src/router.tsx` | TanStack Router configuration (plan showed inline in App.tsx) |
+| `frontend/src/hooks/useAuth.ts` | Auth hook with login/logout logic |
+| `frontend/playwright.config.ts` | Playwright test configuration |
+| `frontend/tests/auth.spec.ts` | Auth E2E tests |
+| `frontend/tests/pages.spec.ts` | Page navigation E2E tests |
+
+### A13. Files in Plan but Not Implemented
+
+| Planned File | Status |
+|-------------|--------|
+| `backend/src/routes/users.rs` | Not created — user management routes deferred |
+| `frontend/src/components/applications/ApplicationList.tsx` | Inline in ApplicationsPage.tsx |
+| `frontend/src/components/applications/ApplicationDetail.tsx` | Inline in ApplicationDetailPage.tsx |
+| `frontend/src/components/applications/ApplicationForm.tsx` | Not created — edit form deferred |
+| `frontend/src/components/findings/FindingDetail.tsx` | Inline in FindingDetailPage.tsx |
+| `frontend/src/components/auth/LoginForm.tsx` | Inline in LoginPage.tsx |
+| `frontend/src/components/auth/ProtectedRoute.tsx` | Handled by router auth guard |
+| `frontend/src/hooks/useFindings.ts` | API calls made directly in pages |
+| `frontend/src/hooks/useApplications.ts` | API calls made directly in pages |
+| `frontend/src/types/user.ts` | User type defined in `authStore.ts` |
+| `frontend/tests/setup.ts` | Vitest not yet configured |
+| `frontend/tests/components/` | Component tests not yet written |
+
+### A14. Vite Configuration Differences
+
+- HTTPS is always enabled (not toggled by env var as plan suggested)
+- Proxy includes `/health` endpoint in addition to `/api`
+- Uses `@tailwindcss/vite` plugin (TailwindCSS v4 pattern)
+
+### A15. .env.example Inconsistency
+
+The root `.env.example` still references `FRONTEND_URL=http://localhost:5173` (http). The actual `backend/.env` uses `https://localhost:5173`. This should be corrected to HTTPS.
 
 ---
 

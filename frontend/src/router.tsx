@@ -14,6 +14,10 @@ import { ApplicationDetailPage } from '@/pages/ApplicationDetailPage'
 import { IngestionPage } from '@/pages/IngestionPage'
 import { TriageQueuePage } from '@/pages/TriageQueuePage'
 import { UnmappedAppsPage } from '@/pages/UnmappedAppsPage'
+import { DeduplicationPage } from '@/pages/DeduplicationPage'
+import { CorrelationPage } from '@/pages/CorrelationPage'
+import { AttackChainsPage } from '@/pages/AttackChainsPage'
+import { AttackChainDetailPage } from '@/pages/AttackChainDetailPage'
 import { authStore } from '@/stores/authStore'
 
 // Root route — wraps everything
@@ -51,10 +55,17 @@ const dashboardRoute = createRoute({
 })
 
 // Findings list
+type FindingsSearchParams = {
+  tab?: string
+}
+
 const findingsRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/findings',
   component: FindingsPage,
+  validateSearch: (search: Record<string, unknown>): FindingsSearchParams => ({
+    tab: typeof search.tab === 'string' ? search.tab : undefined,
+  }),
 })
 
 // Finding detail
@@ -99,6 +110,34 @@ const unmappedRoute = createRoute({
   component: UnmappedAppsPage,
 })
 
+// Deduplication
+const deduplicationRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/deduplication',
+  component: DeduplicationPage,
+})
+
+// Correlation
+const correlationRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/correlations',
+  component: CorrelationPage,
+})
+
+// Attack Chains list
+const attackChainsRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/attack-chains',
+  component: AttackChainsPage,
+})
+
+// Attack Chain detail (per application)
+const attackChainDetailRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/attack-chains/$appId',
+  component: AttackChainDetailPage,
+})
+
 // Build route tree
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -111,6 +150,10 @@ const routeTree = rootRoute.addChildren([
     ingestionRoute,
     triageRoute,
     unmappedRoute,
+    deduplicationRoute,
+    correlationRoute,
+    attackChainsRoute,
+    attackChainDetailRoute,
   ]),
 ])
 

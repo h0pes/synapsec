@@ -13,7 +13,7 @@ use crate::errors::AppError;
 use crate::parsers::sarif::SarifParser;
 use crate::parsers::sonarqube::SonarQubeParser;
 use crate::parsers::{InputFormat, Parser};
-use crate::services::{application, deduplication, finding};
+use crate::services::{app_code_resolver, application, deduplication, finding};
 
 /// Summary of an ingestion run.
 #[derive(Debug, Serialize)]
@@ -54,6 +54,10 @@ pub struct IngestionUpload {
 pub enum ParserType {
     Sonarqube,
     Sarif,
+    #[serde(rename = "jfrog_xray")]
+    JfrogXray,
+    #[serde(rename = "tenable_was")]
+    TenableWas,
 }
 
 impl std::fmt::Display for ParserType {
@@ -61,6 +65,8 @@ impl std::fmt::Display for ParserType {
         match self {
             Self::Sonarqube => write!(f, "sonarqube"),
             Self::Sarif => write!(f, "sarif"),
+            Self::JfrogXray => write!(f, "jfrog_xray"),
+            Self::TenableWas => write!(f, "tenable_was"),
         }
     }
 }
@@ -118,6 +124,8 @@ pub async fn ingest_file(
     let parser: Box<dyn Parser> = match parser_type {
         ParserType::Sonarqube => Box::new(SonarQubeParser::new()),
         ParserType::Sarif => Box::new(SarifParser::new()),
+        ParserType::JfrogXray => Box::new(crate::parsers::jfrog_xray::JfrogXrayParser::new()),
+        ParserType::TenableWas => Box::new(crate::parsers::tenable_was::TenableWasParser::new()),
     };
 
     // 2. Parse raw data
@@ -200,23 +208,76 @@ enum ProcessOutcome {
     Reopened,
 }
 
+/// Extract all string-valued fields from metadata as `(field_name, field_value)` pairs.
+///
+/// Non-string and null values are skipped. Returns an empty vec for non-object
+/// metadata (e.g. `null`, arrays).
+fn extract_resolver_fields(metadata: &serde_json::Value) -> Vec<(String, String)> {
+    let Some(obj) = metadata.as_object() else {
+        return Vec::new();
+    };
+    obj.iter()
+        .filter_map(|(key, val)| val.as_str().map(|s| (key.clone(), s.to_string())))
+        .collect()
+}
+
+/// Load active app code patterns for a source tool, ordered by priority descending.
+async fn load_patterns(
+    pool: &PgPool,
+    source_tool: &str,
+) -> Result<Vec<app_code_resolver::PatternEntry>, AppError> {
+    let rows = sqlx::query_as::<_, (String, String, i32)>(
+        r#"
+        SELECT field_name, regex_pattern, priority
+        FROM app_code_patterns
+        WHERE source_tool = $1 AND is_active = true
+        ORDER BY priority DESC
+        "#,
+    )
+    .bind(source_tool)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(rows
+        .into_iter()
+        .map(|(field_name, regex_pattern, priority)| app_code_resolver::PatternEntry {
+            field_name,
+            regex_pattern,
+            priority,
+        })
+        .collect())
+}
+
 /// Process a single parsed finding: resolve app, check dedup, create if new.
 async fn process_finding(
     pool: &PgPool,
     parsed: &crate::parsers::ParsedFinding,
     initiated_by: Uuid,
 ) -> Result<ProcessOutcome, AppError> {
-    // a. Resolve application from app_code in metadata
-    let app_code = parsed
+    // a. Resolve application: try explicit app_code first, then pattern resolver
+    let explicit_app_code = parsed
         .core
         .metadata
         .get("app_code")
         .and_then(|v| v.as_str())
-        .unwrap_or("");
+        .unwrap_or("")
+        .to_string();
 
     let mut core = parsed.core.clone();
 
-    if !app_code.is_empty() {
+    let resolved_app_code = if !explicit_app_code.is_empty() {
+        Some(explicit_app_code)
+    } else {
+        let patterns = load_patterns(pool, &core.source_tool).await?;
+        if patterns.is_empty() {
+            None
+        } else {
+            let fields = extract_resolver_fields(&core.metadata);
+            app_code_resolver::resolve(&patterns, &fields)
+        }
+    };
+
+    if let Some(app_code) = &resolved_app_code {
         let app =
             application::find_or_create_stub(pool, app_code, &core.source_tool).await?;
         core.application_id = Some(app.id);
@@ -345,6 +406,20 @@ mod tests {
     }
 
     #[test]
+    fn parser_type_jfrog_xray() {
+        let pt: ParserType = serde_json::from_str("\"jfrog_xray\"").unwrap();
+        assert_eq!(pt, ParserType::JfrogXray);
+        assert_eq!(pt.to_string(), "jfrog_xray");
+    }
+
+    #[test]
+    fn parser_type_tenable_was() {
+        let pt: ParserType = serde_json::from_str("\"tenable_was\"").unwrap();
+        assert_eq!(pt, ParserType::TenableWas);
+        assert_eq!(pt.to_string(), "tenable_was");
+    }
+
+    #[test]
     fn ingestion_error_serialization() {
         let err = IngestionError {
             record_index: 5,
@@ -381,5 +456,68 @@ mod tests {
         assert_eq!(json["duplicates"], 3);
         assert_eq!(json["quarantined"], 0);
         assert_eq!(json["errors"], 0);
+    }
+
+    #[test]
+    fn resolver_fields_extracted_from_xray_metadata() {
+        let metadata = serde_json::json!({
+            "impacted_artifact": "gav://com.ourcompany.gpe30:set-ear:0.0.1",
+            "path": "prod-release-local/gpe30/gpe30-set/v1.2.0-rc1/set-ear.ear",
+            "component_physical_path": "default/prod-release-local/gpe30/gpe30-set/v1.2.0-rc1/set-ear.ear"
+        });
+        let fields = extract_resolver_fields(&metadata);
+        assert_eq!(fields.len(), 3);
+
+        let field_map: std::collections::HashMap<_, _> =
+            fields.into_iter().collect();
+        assert_eq!(
+            field_map["impacted_artifact"],
+            "gav://com.ourcompany.gpe30:set-ear:0.0.1"
+        );
+        assert_eq!(
+            field_map["path"],
+            "prod-release-local/gpe30/gpe30-set/v1.2.0-rc1/set-ear.ear"
+        );
+        assert_eq!(
+            field_map["component_physical_path"],
+            "default/prod-release-local/gpe30/gpe30-set/v1.2.0-rc1/set-ear.ear"
+        );
+    }
+
+    #[test]
+    fn resolver_fields_extracted_from_dast_metadata() {
+        let metadata = serde_json::json!({
+            "dns_name": "sacronym.environment.env.domain.com",
+            "url": "https://sacronym.environment.env.domain.com/path",
+            "ip_address": "10.0.0.1",
+            "port": "443",
+            "first_discovered": null,
+            "last_observed": null
+        });
+        let fields = extract_resolver_fields(&metadata);
+
+        // Only string values are extracted; null values are skipped
+        let field_map: std::collections::HashMap<_, _> =
+            fields.into_iter().collect();
+        assert_eq!(
+            field_map["dns_name"],
+            "sacronym.environment.env.domain.com"
+        );
+        assert_eq!(
+            field_map["url"],
+            "https://sacronym.environment.env.domain.com/path"
+        );
+        assert_eq!(field_map["ip_address"], "10.0.0.1");
+        assert_eq!(field_map["port"], "443");
+        // Null fields should not be present
+        assert!(!field_map.contains_key("first_discovered"));
+        assert!(!field_map.contains_key("last_observed"));
+    }
+
+    #[test]
+    fn resolver_fields_handles_empty_metadata() {
+        let metadata = serde_json::json!({});
+        let fields = extract_resolver_fields(&metadata);
+        assert!(fields.is_empty());
     }
 }

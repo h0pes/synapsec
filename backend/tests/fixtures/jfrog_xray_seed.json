@@ -1,0 +1,167 @@
+{
+  "total_rows": 4,
+  "rows": [
+    {
+      "cves": [
+        {
+          "cve": "CVE-2022-42003",
+          "cvss_v2_score": 5.0,
+          "cvss_v2_vector": "AV:N/AC:L/Au:N/C:N/I:N/A:P",
+          "cvss_v3_score": 7.5,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        },
+        {
+          "cve": "CVE-2022-42004",
+          "cvss_v2_score": 5.0,
+          "cvss_v2_vector": "AV:N/AC:L/Au:N/C:N/I:N/A:P",
+          "cvss_v3_score": 7.5,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cvss2_max_score": 5.0,
+      "cvss3_max_score": 7.5,
+      "summary": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.14.0-rc1, resource exhaustion can occur because of a lack of a check in primitive value deserializers.",
+      "severity": "High",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://com.fasterxml.jackson.core:jackson-databind:2.13.3",
+      "component_physical_path": "core-web.war/WEB-INF/lib/jackson-databind-2.13.3.jar",
+      "impacted_artifact": "gav://com.ourcompany.APP01:core-ear:1.0.0",
+      "impact_path": [
+        "gav://com.ourcompany.APP01:core-ear:1.0.0",
+        "gav://com.ourcompany.APP01:core-web:1.0.0",
+        "gav://com.fasterxml.jackson.core:jackson-databind:2.13.3"
+      ],
+      "path": "prod-release-local/APP01/core/v1.0.0/core-ear.ear",
+      "fixed_versions": ["2.13.4.1", "2.14.0-rc1"],
+      "published": "2022-10-02T18:15:00+02:00",
+      "artifact_scan_time": "2025-12-04T17:23:55+01:00",
+      "issue_id": "XRAY-231679",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "In FasterXML jackson-databind before versions 2.13.4.1 and 2.14.0-rc1, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, when used with polymorphic handling methods such as Default Typing.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-42003",
+        "https://github.com/FasterXML/jackson-databind/issues/3590"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2021-44228",
+          "cvss_v2_score": 9.3,
+          "cvss_v2_vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+          "cvss_v3_score": 10.0,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+        }
+      ],
+      "cvss2_max_score": 9.3,
+      "cvss3_max_score": 10.0,
+      "summary": "Apache Log4j2 2.0-beta9 through 2.15.0 JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints.",
+      "severity": "Critical",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://org.apache.logging.log4j:log4j-core:2.14.1",
+      "component_physical_path": "core-ear.ear/lib/log4j-core-2.14.1.jar",
+      "impacted_artifact": "gav://com.ourcompany.APP01:core-ear:1.0.0",
+      "impact_path": [
+        "gav://com.ourcompany.APP01:core-ear:1.0.0",
+        "gav://org.apache.logging.log4j:log4j-core:2.14.1"
+      ],
+      "path": "prod-release-local/APP01/core/v1.0.0/core-ear.ear",
+      "fixed_versions": [],
+      "published": "2021-12-10T10:15:00+01:00",
+      "artifact_scan_time": "2025-12-04T17:23:55+01:00",
+      "issue_id": "XRAY-193120",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and 2.3.1) JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+        "https://logging.apache.org/log4j/2.x/security.html"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2023-34035",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 5.3,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 5.3,
+      "summary": "Spring Security versions 5.8 prior to 5.8.5, 6.0 prior to 6.0.5, and 6.1 prior to 6.1.2 could be susceptible to authorization rule misconfiguration.",
+      "severity": "Medium",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://org.springframework.security:spring-security-config:6.0.3",
+      "component_physical_path": "billing-service.war/WEB-INF/lib/spring-security-config-6.0.3.jar",
+      "impacted_artifact": "gav://com.ourcompany.APP02:billing-ear:2.1.0",
+      "impact_path": [
+        "gav://com.ourcompany.APP02:billing-ear:2.1.0",
+        "gav://com.ourcompany.APP02:billing-service:2.1.0",
+        "gav://org.springframework.security:spring-security-config:6.0.3"
+      ],
+      "path": "prod-release-local/APP02/billing/v2.1.0/billing-ear.ear",
+      "fixed_versions": ["6.0.5"],
+      "published": "2023-07-18T14:15:00+02:00",
+      "artifact_scan_time": "2025-12-04T17:23:55+01:00",
+      "issue_id": "XRAY-521458",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Spring Security versions 5.8 prior to 5.8.5, 6.0 prior to 6.0.5, and 6.1 prior to 6.1.2 could be susceptible to authorization rule misconfiguration if the application uses requestMatchers(String) and multiple servlets.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-34035",
+        "https://spring.io/security/cve-2023-34035"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2024-29025",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 5.3,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 5.3,
+      "summary": "Netty is an asynchronous event-driven network application framework. HttpPostRequestDecoder can be tricked to accumulate data.",
+      "severity": "Medium",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://io.netty:netty-codec-http:4.1.107.Final",
+      "component_physical_path": "gateway-service.war/WEB-INF/lib/netty-codec-http-4.1.107.Final.jar",
+      "impacted_artifact": "gav://com.ourcompany.APP03:gateway-ear:3.0.0",
+      "impact_path": [
+        "gav://com.ourcompany.APP03:gateway-ear:3.0.0",
+        "gav://com.ourcompany.APP03:gateway-service:3.0.0",
+        "gav://io.netty:netty-codec-http:4.1.107.Final"
+      ],
+      "path": "prod-release-local/APP03/gateway/v3.0.0/gateway-ear.ear",
+      "fixed_versions": ["4.1.108.Final"],
+      "published": "2024-03-25T20:15:00+01:00",
+      "artifact_scan_time": "2025-12-04T17:23:55+01:00",
+      "issue_id": "XRAY-589012",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Netty is an asynchronous event-driven network application framework for rapid development of maintainable high performance protocol servers and clients. The HttpPostRequestDecoder can be tricked to accumulate data. While the decoder can store items on the disk if configured so, there are no limits to the memory usage of the output.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-29025",
+        "https://github.com/netty/netty/security/advisories/GHSA-5jpm-x58v-624v"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    }
+  ]
+}
