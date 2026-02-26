@@ -1,5 +1,6 @@
 //! Finding service: CRUD, search, status transitions, comments, and history.
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
@@ -47,6 +48,64 @@ pub struct FindingFilters {
     /// When true, LEFT JOINs category tables to include category-specific fields.
     #[serde(default)]
     pub include_category_data: Option<bool>,
+
+    // SAST-specific filters
+    pub branch: Option<String>,
+    pub rule_id: Option<String>,
+    pub project: Option<String>,
+    pub issue_type: Option<String>,
+    pub quality_gate: Option<String>,
+    pub sast_created_from: Option<DateTime<Utc>>,
+    pub sast_created_to: Option<DateTime<Utc>>,
+    pub baseline_from: Option<DateTime<Utc>>,
+    pub baseline_to: Option<DateTime<Utc>>,
+
+    // SCA-specific filters
+    pub package_type: Option<String>,
+    pub package_name: Option<String>,
+    pub has_fix: Option<bool>,
+    pub published_from: Option<DateTime<Utc>>,
+    pub published_to: Option<DateTime<Utc>>,
+
+    // DAST-specific filters
+    pub target_url: Option<String>,
+    pub exploitable: Option<bool>,
+    pub dns_name: Option<String>,
+    pub discovered_from: Option<DateTime<Utc>>,
+    pub discovered_to: Option<DateTime<Utc>>,
+}
+
+impl FindingFilters {
+    /// Whether any SAST-specific filters are active.
+    pub fn has_sast_filters(&self) -> bool {
+        self.branch.is_some()
+            || self.rule_id.is_some()
+            || self.project.is_some()
+            || self.issue_type.is_some()
+            || self.quality_gate.is_some()
+            || self.sast_created_from.is_some()
+            || self.sast_created_to.is_some()
+            || self.baseline_from.is_some()
+            || self.baseline_to.is_some()
+    }
+
+    /// Whether any SCA-specific filters are active.
+    pub fn has_sca_filters(&self) -> bool {
+        self.package_type.is_some()
+            || self.package_name.is_some()
+            || self.has_fix.is_some()
+            || self.published_from.is_some()
+            || self.published_to.is_some()
+    }
+
+    /// Whether any DAST-specific filters are active.
+    pub fn has_dast_filters(&self) -> bool {
+        self.target_url.is_some()
+            || self.exploitable.is_some()
+            || self.dns_name.is_some()
+            || self.discovered_from.is_some()
+            || self.discovered_to.is_some()
+    }
 }
 
 /// Request body for status update.
@@ -395,7 +454,8 @@ pub async fn list(
 /// List findings with category-specific data included via LEFT JOINs.
 ///
 /// When a category filter is set, only that category's table is joined.
-/// Otherwise all three category tables are joined.
+/// Otherwise all three category tables are joined. Category-specific filters
+/// (SAST, SCA, DAST) also force the relevant table join.
 pub async fn list_with_category(
     pool: &PgPool,
     filters: &FindingFilters,
@@ -436,6 +496,98 @@ pub async fn list_with_category(
         ));
     }
 
+    // SAST-specific conditions (table alias: s)
+    if filters.branch.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.branch = ${param_index}"));
+    }
+    if filters.rule_id.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.rule_id = ${param_index}"));
+    }
+    if filters.project.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.project ILIKE ${param_index}"));
+    }
+    if filters.issue_type.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.issue_type = ${param_index}"));
+    }
+    if filters.quality_gate.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.quality_gate = ${param_index}"));
+    }
+    if filters.sast_created_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.scanner_creation_date >= ${param_index}"));
+    }
+    if filters.sast_created_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.scanner_creation_date <= ${param_index}"));
+    }
+    if filters.baseline_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.baseline_date >= ${param_index}"));
+    }
+    if filters.baseline_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.baseline_date <= ${param_index}"));
+    }
+
+    // SCA-specific conditions (table alias: sc)
+    if filters.package_type.is_some() {
+        param_index += 1;
+        conditions.push(format!("sc.package_type = ${param_index}"));
+    }
+    if filters.package_name.is_some() {
+        param_index += 1;
+        conditions.push(format!("sc.package_name ILIKE ${param_index}"));
+    }
+    if let Some(has_fix) = filters.has_fix {
+        if has_fix {
+            conditions.push("sc.fixed_version IS NOT NULL".to_string());
+        } else {
+            conditions.push("sc.fixed_version IS NULL".to_string());
+        }
+    }
+    if filters.published_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen >= ${param_index}"));
+    }
+    if filters.published_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen <= ${param_index}"));
+    }
+
+    // DAST-specific conditions (table alias: d)
+    if filters.target_url.is_some() {
+        param_index += 1;
+        conditions.push(format!("d.target_url ILIKE ${param_index}"));
+    }
+    if let Some(exploitable) = filters.exploitable {
+        if exploitable {
+            conditions.push(
+                "(d.attack_vector IS NOT NULL AND d.attack_vector != '')".to_string(),
+            );
+        } else {
+            conditions.push(
+                "(d.attack_vector IS NULL OR d.attack_vector = '')".to_string(),
+            );
+        }
+    }
+    if filters.dns_name.is_some() {
+        param_index += 1;
+        conditions.push(format!("d.web_application_name ILIKE ${param_index}"));
+    }
+    if filters.discovered_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen >= ${param_index}"));
+    }
+    if filters.discovered_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen <= ${param_index}"));
+    }
+
     let where_clause = if conditions.is_empty() {
         String::new()
     } else {
@@ -443,18 +595,13 @@ pub async fn list_with_category(
     };
 
     // Determine which category tables to JOIN based on the category filter
-    let join_sast = matches!(
-        filters.category,
-        None | Some(FindingCategory::Sast)
-    );
-    let join_sca = matches!(
-        filters.category,
-        None | Some(FindingCategory::Sca)
-    );
-    let join_dast = matches!(
-        filters.category,
-        None | Some(FindingCategory::Dast)
-    );
+    // and any active category-specific filters.
+    let join_sast = matches!(filters.category, None | Some(FindingCategory::Sast))
+        || filters.has_sast_filters();
+    let join_sca = matches!(filters.category, None | Some(FindingCategory::Sca))
+        || filters.has_sca_filters();
+    let join_dast = matches!(filters.category, None | Some(FindingCategory::Dast))
+        || filters.has_dast_filters();
 
     // Build JOIN clauses
     let mut joins = String::new();
@@ -504,6 +651,12 @@ pub async fn list_with_category(
         pagination.offset()
     );
 
+    // Pre-compute ILIKE patterns so they outlive the query bindings.
+    let project_pattern = filters.project.as_ref().map(|v| format!("%{v}%"));
+    let package_name_pattern = filters.package_name.as_ref().map(|v| format!("%{v}%"));
+    let target_url_pattern = filters.target_url.as_ref().map(|v| format!("%{v}%"));
+    let dns_name_pattern = filters.dns_name.as_ref().map(|v| format!("%{v}%"));
+
     let mut count_query = sqlx::query_scalar::<_, i64>(&count_sql);
     let mut data_query = sqlx::query(&data_sql);
 
@@ -514,6 +667,7 @@ pub async fn list_with_category(
         };
     }
 
+    // Bind core filters — order must match WHERE clause construction above
     if let Some(ref severity) = filters.severity {
         bind_both_cat!(severity);
     }
@@ -534,6 +688,63 @@ pub async fn list_with_category(
     }
     if let Some(ref search) = filters.search {
         bind_both_cat!(search);
+    }
+
+    // Bind SAST-specific filters
+    if let Some(ref branch) = filters.branch {
+        bind_both_cat!(branch);
+    }
+    if let Some(ref rule_id) = filters.rule_id {
+        bind_both_cat!(rule_id);
+    }
+    if let Some(ref pattern) = project_pattern {
+        bind_both_cat!(pattern);
+    }
+    if let Some(ref issue_type) = filters.issue_type {
+        bind_both_cat!(issue_type);
+    }
+    if let Some(ref quality_gate) = filters.quality_gate {
+        bind_both_cat!(quality_gate);
+    }
+    if let Some(ref from) = filters.sast_created_from {
+        bind_both_cat!(from);
+    }
+    if let Some(ref to) = filters.sast_created_to {
+        bind_both_cat!(to);
+    }
+    if let Some(ref from) = filters.baseline_from {
+        bind_both_cat!(from);
+    }
+    if let Some(ref to) = filters.baseline_to {
+        bind_both_cat!(to);
+    }
+
+    // Bind SCA-specific filters (has_fix uses static SQL, no bind needed)
+    if let Some(ref package_type) = filters.package_type {
+        bind_both_cat!(package_type);
+    }
+    if let Some(ref pattern) = package_name_pattern {
+        bind_both_cat!(pattern);
+    }
+    if let Some(ref from) = filters.published_from {
+        bind_both_cat!(from);
+    }
+    if let Some(ref to) = filters.published_to {
+        bind_both_cat!(to);
+    }
+
+    // Bind DAST-specific filters (exploitable uses static SQL, no bind needed)
+    if let Some(ref pattern) = target_url_pattern {
+        bind_both_cat!(pattern);
+    }
+    if let Some(ref pattern) = dns_name_pattern {
+        bind_both_cat!(pattern);
+    }
+    if let Some(ref from) = filters.discovered_from {
+        bind_both_cat!(from);
+    }
+    if let Some(ref to) = filters.discovered_to {
+        bind_both_cat!(to);
     }
 
     let total = count_query.fetch_one(pool).await?;
