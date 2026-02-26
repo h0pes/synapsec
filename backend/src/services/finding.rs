@@ -1042,6 +1042,372 @@ pub async fn bulk_tag(pool: &PgPool, input: &BulkTag) -> Result<BulkResult, AppE
     })
 }
 
+/// List all findings matching filters for export (no pagination).
+///
+/// Uses the same query logic as `list_with_category()` but omits LIMIT/OFFSET
+/// and the COUNT query, returning all matching rows in a single `Vec`.
+pub async fn list_all_for_export(
+    pool: &PgPool,
+    filters: &FindingFilters,
+) -> Result<Vec<FindingSummaryWithCategory>, AppError> {
+    // Build WHERE conditions on the findings table (aliased as "f")
+    let mut conditions: Vec<String> = Vec::new();
+    let mut param_index = 0u32;
+
+    if filters.severity.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.normalized_severity = ${param_index}"));
+    }
+    if filters.status.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.status = ${param_index}"));
+    }
+    if filters.category.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.finding_category = ${param_index}"));
+    }
+    if filters.application_id.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.application_id = ${param_index}"));
+    }
+    if filters.source_tool.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.source_tool = ${param_index}"));
+    }
+    if filters.sla_status.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.sla_status = ${param_index}"));
+    }
+    if filters.search.is_some() {
+        param_index += 1;
+        conditions.push(format!(
+            "f.search_vector @@ plainto_tsquery('english', ${param_index})"
+        ));
+    }
+
+    // SAST-specific conditions (table alias: s)
+    if filters.branch.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.branch = ${param_index}"));
+    }
+    if filters.rule_id.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.rule_id = ${param_index}"));
+    }
+    if filters.project.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.project ILIKE ${param_index}"));
+    }
+    if filters.issue_type.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.issue_type = ${param_index}"));
+    }
+    if filters.quality_gate.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.quality_gate = ${param_index}"));
+    }
+    if filters.sast_created_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.scanner_creation_date >= ${param_index}"));
+    }
+    if filters.sast_created_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.scanner_creation_date <= ${param_index}"));
+    }
+    if filters.baseline_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.baseline_date >= ${param_index}"));
+    }
+    if filters.baseline_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("s.baseline_date <= ${param_index}"));
+    }
+
+    // SCA-specific conditions (table alias: sc)
+    if filters.package_type.is_some() {
+        param_index += 1;
+        conditions.push(format!("sc.package_type = ${param_index}"));
+    }
+    if filters.package_name.is_some() {
+        param_index += 1;
+        conditions.push(format!("sc.package_name ILIKE ${param_index}"));
+    }
+    if let Some(has_fix) = filters.has_fix {
+        if has_fix {
+            conditions.push("sc.fixed_version IS NOT NULL".to_string());
+        } else {
+            conditions.push("sc.fixed_version IS NULL".to_string());
+        }
+    }
+    if filters.published_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen >= ${param_index}"));
+    }
+    if filters.published_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen <= ${param_index}"));
+    }
+
+    // DAST-specific conditions (table alias: d)
+    if filters.target_url.is_some() {
+        param_index += 1;
+        conditions.push(format!("d.target_url ILIKE ${param_index}"));
+    }
+    if let Some(exploitable) = filters.exploitable {
+        if exploitable {
+            conditions.push(
+                "(d.attack_vector IS NOT NULL AND d.attack_vector != '')".to_string(),
+            );
+        } else {
+            conditions.push(
+                "(d.attack_vector IS NULL OR d.attack_vector = '')".to_string(),
+            );
+        }
+    }
+    if filters.dns_name.is_some() {
+        param_index += 1;
+        conditions.push(format!("d.web_application_name ILIKE ${param_index}"));
+    }
+    if filters.discovered_from.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen >= ${param_index}"));
+    }
+    if filters.discovered_to.is_some() {
+        param_index += 1;
+        conditions.push(format!("f.first_seen <= ${param_index}"));
+    }
+
+    let where_clause = if conditions.is_empty() {
+        String::new()
+    } else {
+        format!("WHERE {}", conditions.join(" AND "))
+    };
+
+    // Determine which category tables to JOIN
+    let join_sast = matches!(filters.category, None | Some(FindingCategory::Sast))
+        || filters.has_sast_filters();
+    let join_sca = matches!(filters.category, None | Some(FindingCategory::Sca))
+        || filters.has_sca_filters();
+    let join_dast = matches!(filters.category, None | Some(FindingCategory::Dast))
+        || filters.has_dast_filters();
+
+    let mut joins = String::new();
+    if join_sast {
+        joins.push_str(" LEFT JOIN finding_sast s ON s.finding_id = f.id");
+    }
+    if join_sca {
+        joins.push_str(" LEFT JOIN finding_sca sc ON sc.finding_id = f.id");
+    }
+    if join_dast {
+        joins.push_str(" LEFT JOIN finding_dast d ON d.finding_id = f.id");
+    }
+
+    let mut extra_columns = String::new();
+    if join_sast {
+        extra_columns.push_str(
+            ", s.file_path AS sast_file_path, s.line_number_start AS sast_line_number, \
+             s.rule_id AS sast_rule_id, s.project AS sast_project, \
+             s.language AS sast_language, s.branch AS sast_branch",
+        );
+    }
+    if join_sca {
+        extra_columns.push_str(
+            ", sc.package_name AS sca_package_name, sc.package_version AS sca_package_version, \
+             sc.fixed_version AS sca_fixed_version, \
+             sc.dependency_type::text AS sca_dependency_type, \
+             sc.known_exploited AS sca_known_exploited",
+        );
+    }
+    if join_dast {
+        extra_columns.push_str(
+            ", d.target_url AS dast_target_url, d.parameter AS dast_parameter, \
+             d.web_application_name AS dast_web_application_name",
+        );
+    }
+
+    // No LIMIT/OFFSET — export returns all matching rows
+    let data_sql = format!(
+        "SELECT f.id, f.source_tool, f.finding_category, f.title, f.normalized_severity, \
+         f.status, f.composite_risk_score, f.fingerprint, f.application_id, \
+         f.first_seen, f.last_seen, f.sla_status{extra_columns} \
+         FROM findings f {joins} {where_clause} \
+         ORDER BY f.composite_risk_score DESC NULLS LAST, f.normalized_severity ASC, f.first_seen DESC"
+    );
+
+    // Pre-compute ILIKE patterns so they outlive the query bindings.
+    let project_pattern = filters.project.as_ref().map(|v| format!("%{v}%"));
+    let package_name_pattern = filters.package_name.as_ref().map(|v| format!("%{v}%"));
+    let target_url_pattern = filters.target_url.as_ref().map(|v| format!("%{v}%"));
+    let dns_name_pattern = filters.dns_name.as_ref().map(|v| format!("%{v}%"));
+
+    let mut data_query = sqlx::query(&data_sql);
+
+    macro_rules! bind_export {
+        ($val:expr) => {
+            data_query = data_query.bind($val);
+        };
+    }
+
+    // Bind core filters — order must match WHERE clause construction above
+    if let Some(ref severity) = filters.severity {
+        bind_export!(severity);
+    }
+    if let Some(ref status) = filters.status {
+        bind_export!(status);
+    }
+    if let Some(ref category) = filters.category {
+        bind_export!(category);
+    }
+    if let Some(ref app_id) = filters.application_id {
+        bind_export!(app_id);
+    }
+    if let Some(ref tool) = filters.source_tool {
+        bind_export!(tool);
+    }
+    if let Some(ref sla) = filters.sla_status {
+        bind_export!(sla);
+    }
+    if let Some(ref search) = filters.search {
+        bind_export!(search);
+    }
+
+    // Bind SAST-specific filters
+    if let Some(ref branch) = filters.branch {
+        bind_export!(branch);
+    }
+    if let Some(ref rule_id) = filters.rule_id {
+        bind_export!(rule_id);
+    }
+    if let Some(ref pattern) = project_pattern {
+        bind_export!(pattern);
+    }
+    if let Some(ref issue_type) = filters.issue_type {
+        bind_export!(issue_type);
+    }
+    if let Some(ref quality_gate) = filters.quality_gate {
+        bind_export!(quality_gate);
+    }
+    if let Some(ref from) = filters.sast_created_from {
+        bind_export!(from);
+    }
+    if let Some(ref to) = filters.sast_created_to {
+        bind_export!(to);
+    }
+    if let Some(ref from) = filters.baseline_from {
+        bind_export!(from);
+    }
+    if let Some(ref to) = filters.baseline_to {
+        bind_export!(to);
+    }
+
+    // Bind SCA-specific filters (has_fix uses static SQL, no bind needed)
+    if let Some(ref package_type) = filters.package_type {
+        bind_export!(package_type);
+    }
+    if let Some(ref pattern) = package_name_pattern {
+        bind_export!(pattern);
+    }
+    if let Some(ref from) = filters.published_from {
+        bind_export!(from);
+    }
+    if let Some(ref to) = filters.published_to {
+        bind_export!(to);
+    }
+
+    // Bind DAST-specific filters (exploitable uses static SQL, no bind needed)
+    if let Some(ref pattern) = target_url_pattern {
+        bind_export!(pattern);
+    }
+    if let Some(ref pattern) = dns_name_pattern {
+        bind_export!(pattern);
+    }
+    if let Some(ref from) = filters.discovered_from {
+        bind_export!(from);
+    }
+    if let Some(ref to) = filters.discovered_to {
+        bind_export!(to);
+    }
+
+    let rows = data_query.fetch_all(pool).await?;
+
+    let items: Vec<FindingSummaryWithCategory> = rows
+        .into_iter()
+        .map(|row| {
+            let finding_category: FindingCategory = row.get("finding_category");
+
+            let summary = FindingSummary {
+                id: row.get("id"),
+                source_tool: row.get("source_tool"),
+                finding_category: finding_category.clone(),
+                title: row.get("title"),
+                normalized_severity: row.get("normalized_severity"),
+                status: row.get("status"),
+                composite_risk_score: row.get("composite_risk_score"),
+                fingerprint: row.get("fingerprint"),
+                application_id: row.get("application_id"),
+                first_seen: row.get("first_seen"),
+                last_seen: row.get("last_seen"),
+                sla_status: row.get("sla_status"),
+            };
+
+            let category_data = match finding_category {
+                FindingCategory::Sast if join_sast => {
+                    let file_path: Option<String> = row.get("sast_file_path");
+                    if file_path.is_some() {
+                        Some(FindingCategoryData {
+                            file_path,
+                            line_number: row.get("sast_line_number"),
+                            rule_id: row.get("sast_rule_id"),
+                            project: row.get("sast_project"),
+                            language: row.get("sast_language"),
+                            branch: row.get("sast_branch"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                FindingCategory::Sca if join_sca => {
+                    let package_name: Option<String> = row.get("sca_package_name");
+                    if package_name.is_some() {
+                        Some(FindingCategoryData {
+                            package_name,
+                            package_version: row.get("sca_package_version"),
+                            fixed_version: row.get("sca_fixed_version"),
+                            dependency_type: row.get("sca_dependency_type"),
+                            known_exploited: row.get("sca_known_exploited"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                FindingCategory::Dast if join_dast => {
+                    let target_url: Option<String> = row.get("dast_target_url");
+                    if target_url.is_some() {
+                        Some(FindingCategoryData {
+                            target_url,
+                            parameter: row.get("dast_parameter"),
+                            web_application_name: row.get("dast_web_application_name"),
+                            ..Default::default()
+                        })
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            };
+
+            FindingSummaryWithCategory {
+                summary,
+                category_data,
+            }
+        })
+        .collect();
+
+    Ok(items)
+}
+
 /// Update last_seen timestamp for a finding (used during re-ingestion).
 pub async fn touch_last_seen(pool: &PgPool, id: Uuid) -> Result<(), AppError> {
     sqlx::query("UPDATE findings SET last_seen = NOW(), updated_at = NOW() WHERE id = $1")

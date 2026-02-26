@@ -92,6 +92,7 @@ async fn main() -> anyhow::Result<()> {
     // API v1 finding routes
     let finding_routes = Router::new()
         .route("/findings", get(routes::findings::list).post(routes::findings::create))
+        .route("/findings/export", get(routes::findings::export_findings))
         .route("/findings/bulk/status", post(routes::findings::bulk_status))
         .route("/findings/bulk/assign", post(routes::findings::bulk_assign))
         .route("/findings/bulk/tag", post(routes::findings::bulk_tag))
