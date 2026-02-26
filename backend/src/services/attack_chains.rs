@@ -405,7 +405,8 @@ pub async fn get_by_app(
                fr.relationship_type::text AS relationship_type,
                fr.confidence::text AS confidence
         FROM finding_relationships fr
-        WHERE fr.source_finding_id = ANY($1) OR fr.target_finding_id = ANY($1)
+        WHERE (fr.source_finding_id = ANY($1) OR fr.target_finding_id = ANY($1))
+          AND fr.relationship_type IN ('correlated_with', 'grouped_under')
         "#,
     )
     .bind(&finding_ids)
