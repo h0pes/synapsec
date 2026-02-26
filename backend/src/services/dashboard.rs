@@ -16,6 +16,7 @@ pub struct DashboardStats {
     pub sla_summary: SlaSummary,
     pub recent_ingestions: Vec<RecentIngestion>,
     pub top_risky_apps: Vec<TopRiskyApp>,
+    pub findings_by_source: Vec<SourceToolCount>,
 }
 
 /// Open finding counts grouped by normalized severity.
@@ -48,6 +49,13 @@ pub struct RecentIngestion {
     pub completed_at: Option<DateTime<Utc>>,
 }
 
+/// Open finding count for a single source tool (scanner).
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct SourceToolCount {
+    pub source_tool: String,
+    pub count: i64,
+}
+
 /// Application with highest open finding counts.
 #[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct TopRiskyApp {
@@ -61,13 +69,14 @@ pub struct TopRiskyApp {
 
 /// Fetch all dashboard statistics in parallel queries.
 pub async fn get_stats(pool: &PgPool) -> Result<DashboardStats, AppError> {
-    let (triage_count, unmapped_apps_count, severity_counts, sla_summary, recent_ingestions, top_risky_apps) = tokio::try_join!(
+    let (triage_count, unmapped_apps_count, severity_counts, sla_summary, recent_ingestions, top_risky_apps, findings_by_source) = tokio::try_join!(
         fetch_triage_count(pool),
         fetch_unmapped_apps_count(pool),
         fetch_severity_counts(pool),
         fetch_sla_summary(pool),
         fetch_recent_ingestions(pool),
         fetch_top_risky_apps(pool),
+        fetch_findings_by_source(pool),
     )?;
 
     Ok(DashboardStats {
@@ -77,6 +86,7 @@ pub async fn get_stats(pool: &PgPool) -> Result<DashboardStats, AppError> {
         sla_summary,
         recent_ingestions,
         top_risky_apps,
+        findings_by_source,
     })
 }
 
@@ -199,6 +209,22 @@ async fn fetch_top_risky_apps(pool: &PgPool) -> Result<Vec<TopRiskyApp>, AppErro
         GROUP BY a.id, a.app_name, a.app_code
         ORDER BY COUNT(f.id) DESC
         LIMIT 5
+        "#,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(rows)
+}
+
+/// Count open findings grouped by source tool (scanner).
+async fn fetch_findings_by_source(pool: &PgPool) -> Result<Vec<SourceToolCount>, AppError> {
+    let rows = sqlx::query_as::<_, SourceToolCount>(
+        r#"
+        SELECT source_tool, COUNT(*) AS count
+        FROM findings
+        WHERE status NOT IN ('Closed', 'False_Positive', 'Invalidated')
+        GROUP BY source_tool
+        ORDER BY count DESC
         "#,
     )
     .fetch_all(pool)
