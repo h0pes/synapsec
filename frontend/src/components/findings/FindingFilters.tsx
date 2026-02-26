@@ -14,6 +14,7 @@ import type { FindingFilters as Filters } from '@/types/finding'
 type Props = {
   filters: Filters
   onChange: (filters: Filters) => void
+  hideCategory?: boolean
 }
 
 const SEVERITIES = ['Critical', 'High', 'Medium', 'Low', 'Info'] as const
@@ -23,7 +24,7 @@ const STATUSES = [
 ] as const
 const CATEGORIES = ['SAST', 'SCA', 'DAST'] as const
 
-export function FindingFiltersPanel({ filters, onChange }: Props) {
+export function FindingFiltersPanel({ filters, onChange, hideCategory }: Props) {
   const { t } = useTranslation()
 
   const hasActiveFilters = filters.severity || filters.status || filters.category || filters.search
@@ -73,21 +74,23 @@ export function FindingFiltersPanel({ filters, onChange }: Props) {
         </SelectContent>
       </Select>
 
-      {/* Category */}
-      <Select
-        value={filters.category ?? '__all__'}
-        onValueChange={(v) => onChange({ ...filters, category: v === '__all__' ? undefined : v as Filters['category'] })}
-      >
-        <SelectTrigger className="w-32">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all__">All Categories</SelectItem>
-          {CATEGORIES.map((c) => (
-            <SelectItem key={c} value={c}>{c}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Category — hidden when a specific tab is active */}
+      {!hideCategory && (
+        <Select
+          value={filters.category ?? '__all__'}
+          onValueChange={(v) => onChange({ ...filters, category: v === '__all__' ? undefined : v as Filters['category'] })}
+        >
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All Categories</SelectItem>
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Clear filters */}
       {hasActiveFilters && (

@@ -127,7 +127,7 @@ export function FindingsPage() {
           <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
         </TabsList>
 
-        <FindingFiltersPanel filters={filters} onChange={handleFiltersChange} />
+        <FindingFiltersPanel filters={filters} onChange={handleFiltersChange} hideCategory={activeTab !== 'all'} />
 
         {loading ? (
           <div className="flex h-64 items-center justify-center text-muted-foreground">
