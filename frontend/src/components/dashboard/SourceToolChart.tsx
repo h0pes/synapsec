@@ -47,8 +47,8 @@ export function SourceToolChart({ data }: SourceToolChartProps) {
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-        <XAxis dataKey="name" className="text-xs" />
-        <YAxis allowDecimals={false} className="text-xs" />
+        <XAxis dataKey="name" tick={{ fontSize: '0.75rem' }} interval={0} />
+        <YAxis allowDecimals={false} tick={{ fontSize: '0.75rem' }} interval={0} />
         <Tooltip />
         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
           {chartData.map((entry) => (

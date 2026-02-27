@@ -44,8 +44,8 @@ export function TopAppsChart({ apps }: TopAppsChartProps) {
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={chartData} layout="vertical">
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-        <XAxis type="number" allowDecimals={false} className="text-xs" />
-        <YAxis type="category" dataKey="name" width={80} className="text-xs" />
+        <XAxis type="number" allowDecimals={false} tick={{ fontSize: '0.75rem' }} interval={0} />
+        <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: '0.75rem' }} interval={0} />
         <Tooltip />
         <Bar dataKey="critical" stackId="a" fill="#ef4444" name={t('dashboard.severity.critical')} />
         <Bar dataKey="high" stackId="a" fill="#f97316" name={t('dashboard.severity.high')} />
