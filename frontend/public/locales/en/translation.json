@@ -34,7 +34,10 @@
     "previous": "Previous",
     "next": "Next",
     "finding": "finding",
-    "findings": "findings"
+    "findings": "findings",
+    "all": "All",
+    "from": "From",
+    "to": "To"
   },
   "dedup": {
     "title": "Deduplication Dashboard",

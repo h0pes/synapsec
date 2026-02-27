@@ -34,7 +34,10 @@
     "previous": "Precedente",
     "next": "Successivo",
     "finding": "risultato",
-    "findings": "risultati"
+    "findings": "risultati",
+    "all": "Tutti",
+    "from": "Da",
+    "to": "A"
   },
   "dedup": {
     "title": "Dashboard Deduplicazione",
