@@ -177,9 +177,18 @@ export function FindingsPage() {
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="all">{t('findings.tabs.all')}</TabsTrigger>
-            <TabsTrigger value="sast">{t('findings.tabs.sast')}</TabsTrigger>
-            <TabsTrigger value="sca">{t('findings.tabs.sca')}</TabsTrigger>
-            <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
+            <TabsTrigger value="sast" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-sast" />
+              {t('findings.tabs.sast')}
+            </TabsTrigger>
+            <TabsTrigger value="sca" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-sca" />
+              {t('findings.tabs.sca')}
+            </TabsTrigger>
+            <TabsTrigger value="dast" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-dast" />
+              {t('findings.tabs.dast')}
+            </TabsTrigger>
           </TabsList>
           {activeTab === 'all' && (
             <FindingSearchBar search={search} onSearchChange={handleSearchChange} />

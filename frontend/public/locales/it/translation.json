@@ -53,7 +53,9 @@
     "unmappedDescription": "Queste applicazioni sono state create automaticamente dai nomi dei progetti degli scanner durante l'importazione. Verificale o uniscile con applicazioni esistenti.",
     "all": "Tutti",
     "from": "Da",
-    "to": "A"
+    "to": "A",
+    "yes": "Sì",
+    "no": "No"
   },
   "dashboard": {
     "charts": {
@@ -277,5 +279,44 @@
       "previous": "Precedente",
       "next": "Successivo"
     }
+  },
+  "findingDetail": {
+    "notFound": "Risultato non trovato",
+    "risk": "Rischio",
+    "details": "Dettagli",
+    "originalSeverity": "Severità Originale",
+    "sourceFindingId": "ID Risultato Sorgente",
+    "fingerprint": "Fingerprint",
+    "firstSeen": "Prima Rilevazione",
+    "lastSeen": "Ultima Rilevazione",
+    "owner": "Responsabile",
+    "cwe": "CWE",
+    "cve": "CVE",
+    "owasp": "OWASP",
+    "sastDetails": "Dettagli SAST",
+    "file": "File",
+    "lines": "Righe",
+    "rule": "Regola",
+    "project": "Progetto",
+    "branch": "Branch",
+    "language": "Linguaggio",
+    "codeSnippet": "Frammento di Codice",
+    "scaDetails": "Dettagli SCA",
+    "package": "Pacchetto",
+    "fixedVersion": "Versione Corretta",
+    "dependency": "Dipendenza",
+    "epss": "EPSS",
+    "knownExploited": "Exploit Noto",
+    "dastDetails": "Dettagli DAST",
+    "url": "URL",
+    "method": "Metodo",
+    "parameter": "Parametro",
+    "comments": "Commenti",
+    "history": "Storico",
+    "rawFinding": "Dato Grezzo",
+    "addComment": "Aggiungi un commento...",
+    "send": "Invia",
+    "noHistory": "Nessuna voce nello storico",
+    "transitions": "Transizione a"
   }
 }
