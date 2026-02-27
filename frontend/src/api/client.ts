@@ -99,6 +99,59 @@ async function attemptRefresh(): Promise<boolean> {
   }
 }
 
+/**
+ * Low-level authenticated fetch that handles 401 refresh/retry.
+ * Returns the raw Response (caller handles body parsing).
+ */
+async function requestRaw(
+  path: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const token = authStore.getAccessToken()
+
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+  })
+
+  // Handle 401 — attempt token refresh
+  if (response.status === 401 && token) {
+    const refreshed = await attemptRefresh()
+    if (refreshed) {
+      headers['Authorization'] = `Bearer ${authStore.getAccessToken()}`
+      return fetch(`${API_BASE}${path}`, { ...options, headers })
+    }
+    authStore.logout()
+    window.location.href = '/login'
+    throw new ApiClientError('UNAUTHORIZED', 'Session expired', 401)
+  }
+
+  return response
+}
+
+/** GET request returning a Blob (for file downloads). */
+export async function apiGetBlob(
+  path: string,
+  params?: Record<string, string>,
+): Promise<Blob> {
+  const url = params
+    ? `${path}?${new URLSearchParams(params).toString()}`
+    : path
+  const response = await requestRaw(url)
+  if (!response.ok) {
+    throw new ApiClientError('EXPORT_FAILED', `Request failed: ${response.status}`, response.status)
+  }
+  return response.blob()
+}
+
 /** GET request. */
 export function apiGet<T>(
   path: string,

@@ -1,5 +1,4 @@
-import { apiGet, apiPost, apiPut, apiPatch } from './client'
-import { authStore } from '@/stores/authStore'
+import { apiGet, apiGetBlob, apiPost, apiPut, apiPatch } from './client'
 import type {
   FindingSummary,
   FindingSummaryWithCategory,
@@ -121,20 +120,11 @@ export function bulkAssign(
 }
 
 /** GET /findings/export — download findings as CSV or JSON blob. */
-export async function exportFindings(
+export function exportFindings(
   filters: Record<string, string>,
   format: 'csv' | 'json',
 ): Promise<Blob> {
-  const params = new URLSearchParams({ ...filters, format })
-  const token = authStore.getAccessToken()
-  const headers: Record<string, string> = {}
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
-  const response = await fetch(`/api/v1/findings/export?${params}`, { headers })
-  if (!response.ok) {
-    throw new Error(`Export failed: ${response.status}`)
-  }
-  return response.blob()
+  return apiGetBlob('/findings/export', { ...filters, format })
 }
 
 /** POST /findings/bulk/tag — bulk tag. */
