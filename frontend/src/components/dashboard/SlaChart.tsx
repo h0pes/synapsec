@@ -29,6 +29,7 @@ export function SlaChart({ summary }: SlaChartProps) {
     )
   }
 
+  // Ordered outermost → innermost: breached receives visual prominence as the most critical state.
   const data = [
     {
       name: t('dashboard.sla.breached'),

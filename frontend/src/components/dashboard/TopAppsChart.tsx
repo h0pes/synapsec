@@ -37,7 +37,7 @@ export function TopAppsChart({ apps }: TopAppsChartProps) {
     name: app.app_code,
     critical: app.critical_count,
     high: app.high_count,
-    other: app.finding_count - app.critical_count - app.high_count,
+    other: Math.max(0, app.finding_count - app.critical_count - app.high_count),
   }))
 
   return (
