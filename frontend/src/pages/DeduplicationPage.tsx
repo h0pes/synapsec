@@ -158,8 +158,19 @@ export function DeduplicationPage() {
 
   if (statsLoading && pendingLoading && historyLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-6">
+        <div className="skeleton h-8 w-48" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="skeleton h-[100px] rounded-xl" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="skeleton h-12 rounded-lg" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -259,8 +270,11 @@ export function DeduplicationPage() {
         </div>
 
         {pendingLoading ? (
-          <div className="flex h-32 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            <div className="skeleton h-10 rounded-lg" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="skeleton h-12 rounded-lg" />
+            ))}
           </div>
         ) : pending.length === 0 ? (
           <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -357,8 +371,11 @@ export function DeduplicationPage() {
         </div>
 
         {historyLoading ? (
-          <div className="flex h-32 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            <div className="skeleton h-10 rounded-lg" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="skeleton h-12 rounded-lg" />
+            ))}
           </div>
         ) : history.length === 0 ? (
           <div className="flex h-32 items-center justify-center text-muted-foreground">

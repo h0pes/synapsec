@@ -100,8 +100,11 @@ function RulesTab() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-3 mt-4">
+        <div className="skeleton h-10 rounded-lg" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="skeleton h-12 rounded-lg" />
+        ))}
       </div>
     )
   }
@@ -219,8 +222,11 @@ function GroupsTab() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-3 mt-4">
+        <div className="skeleton h-10 rounded-lg" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="skeleton h-12 rounded-lg" />
+        ))}
       </div>
     )
   }

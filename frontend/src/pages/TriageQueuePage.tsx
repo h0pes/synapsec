@@ -79,8 +79,11 @@ export function TriageQueuePage() {
       </PageHeader>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common.loading')}
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton h-12 rounded-lg" />
+          ))}
         </div>
       ) : findings.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">

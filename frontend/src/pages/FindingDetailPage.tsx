@@ -101,7 +101,20 @@ export function FindingDetailPage() {
   }
 
   if (loading) {
-    return <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common.loading')}</div>
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="skeleton h-10 w-10 rounded-md" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-7 w-2/3" />
+            <div className="skeleton h-5 w-1/3" />
+          </div>
+        </div>
+        <div className="skeleton h-[200px] rounded-xl" />
+        <div className="skeleton h-[150px] rounded-xl" />
+        <div className="skeleton h-[200px] rounded-xl" />
+      </div>
+    )
   }
 
   if (!finding) {
@@ -111,7 +124,7 @@ export function FindingDetailPage() {
   const validTransitions = TRANSITIONS[finding.status] ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in">
       {/* Back button + title */}
       <div className="flex items-start gap-4">
         <Button variant="ghost" size="icon" aria-label={t('common.back')} onClick={() => navigate({ to: '/findings' })}>
@@ -151,7 +164,7 @@ export function FindingDetailPage() {
       )}
 
       {/* Core info */}
-      <Card>
+      <Card className="animate-in stagger-1">
         <CardHeader>
           <CardTitle>{t('findingDetail.details')}</CardTitle>
         </CardHeader>
@@ -180,7 +193,7 @@ export function FindingDetailPage() {
 
       {/* Category-specific info */}
       {finding.sast && (
-        <Card className="border-l-4 border-l-sast">
+        <Card className="animate-in stagger-2 border-l-4 border-l-sast">
           <CardHeader><CardTitle>{t('findingDetail.sastDetails')}</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="font-medium">{t('findingDetail.file')}:</span> {finding.sast.file_path}</div>
@@ -200,7 +213,7 @@ export function FindingDetailPage() {
       )}
 
       {finding.sca && (
-        <Card className="border-l-4 border-l-sca">
+        <Card className="animate-in stagger-2 border-l-4 border-l-sca">
           <CardHeader><CardTitle>{t('findingDetail.scaDetails')}</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="font-medium">{t('findingDetail.package')}:</span> {finding.sca.package_name}@{finding.sca.package_version}</div>
@@ -213,7 +226,7 @@ export function FindingDetailPage() {
       )}
 
       {finding.dast && (
-        <Card className="border-l-4 border-l-dast">
+        <Card className="animate-in stagger-2 border-l-4 border-l-dast">
           <CardHeader><CardTitle>{t('findingDetail.dastDetails')}</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="font-medium">{t('findingDetail.url')}:</span> {finding.dast.target_url}</div>
@@ -224,7 +237,7 @@ export function FindingDetailPage() {
       )}
 
       {/* Tabs: Comments + History + Raw */}
-      <Tabs defaultValue="comments">
+      <Tabs defaultValue="comments" className="animate-in stagger-3">
         <TabsList>
           <TabsTrigger value="comments" className="gap-1">
             <MessageSquare className="h-3 w-3" /> {t('findingDetail.comments')} ({comments.length})
@@ -236,8 +249,8 @@ export function FindingDetailPage() {
         </TabsList>
 
         <TabsContent value="comments" className="space-y-4">
-          {comments.map((c) => (
-            <div key={c.id} className="rounded border p-3">
+          {comments.map((c, idx) => (
+            <div key={c.id} className={`animate-in rounded border p-3 ${idx < 8 ? `stagger-${idx + 1}` : ''}`}>
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium">{c.author_name}</span>
                 <span className="text-muted-foreground">{new Date(c.created_at).toLocaleString()}</span>

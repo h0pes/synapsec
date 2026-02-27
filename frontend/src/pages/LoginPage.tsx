@@ -71,7 +71,7 @@ export function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
 
         {/* Brand content */}
-        <div className="relative flex h-full flex-col items-center justify-center px-12 text-primary-foreground">
+        <div className="relative flex h-full flex-col items-center justify-center px-12 text-primary-foreground animate-in">
           <Shield className="mb-6 h-16 w-16 opacity-90" />
           <h1 className="mb-3 text-3xl font-bold tracking-tight">{t('app.title')}</h1>
           <p className="max-w-sm text-center text-base text-primary-foreground/70">
@@ -84,7 +84,7 @@ export function LoginPage() {
 
       {/* Form panel */}
       <div className="flex w-full items-center justify-center px-6 lg:w-1/2">
-        <div className="w-full max-w-sm space-y-8">
+        <div className="w-full max-w-sm space-y-8 animate-in">
           {/* Mobile brand (shown only below lg breakpoint) */}
           <div className="space-y-2 text-center lg:hidden">
             <Shield className="mx-auto h-10 w-10 text-primary" />

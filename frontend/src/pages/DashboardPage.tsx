@@ -44,8 +44,18 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-6">
+        <div className="skeleton h-8 w-48" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="skeleton h-[120px] rounded-xl" />
+          ))}
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="skeleton h-[300px] rounded-xl" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -66,7 +76,7 @@ export function DashboardPage() {
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          className="animate-in stagger-1 card-interactive cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
           role="button"
           tabIndex={0}
           onClick={() => navigate({ to: '/triage' })}
@@ -83,7 +93,7 @@ export function DashboardPage() {
         </Card>
 
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          className="animate-in stagger-2 card-interactive cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
           role="button"
           tabIndex={0}
           onClick={() => navigate({ to: '/unmapped' })}
@@ -99,7 +109,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-3 card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.slaStatus')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -114,7 +124,7 @@ export function DashboardPage() {
         </Card>
 
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          className="animate-in stagger-4 card-interactive cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
           role="button"
           tabIndex={0}
           onClick={() => navigate({ to: '/findings' })}
@@ -138,7 +148,7 @@ export function DashboardPage() {
 
       {/* Chart widgets */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="animate-in stagger-5">
           <CardHeader>
             <CardTitle>{t('dashboard.charts.severityDistribution')}</CardTitle>
           </CardHeader>
@@ -147,7 +157,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-6">
           <CardHeader>
             <CardTitle>{t('dashboard.charts.findingsBySource')}</CardTitle>
           </CardHeader>
@@ -156,7 +166,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-7">
           <CardHeader>
             <CardTitle>{t('dashboard.charts.riskiestApps')}</CardTitle>
           </CardHeader>
@@ -165,7 +175,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-8">
           <CardHeader>
             <CardTitle>{t('dashboard.charts.slaCompliance')}</CardTitle>
           </CardHeader>
@@ -178,7 +188,7 @@ export function DashboardPage() {
       {/* Bottom row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent ingestions */}
-        <Card>
+        <Card className="animate-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-4 w-4" /> {t('dashboard.recentImports')}
@@ -192,7 +202,7 @@ export function DashboardPage() {
                 {stats.recent_ingestions.map((ing) => (
                   <div
                     key={ing.id}
-                    className="flex items-center justify-between rounded border p-3"
+                    className="card-interactive flex items-center justify-between rounded-lg border p-3"
                   >
                     <div>
                       <p className="text-sm font-medium">{ing.source_tool}</p>
@@ -227,7 +237,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Top risky apps */}
-        <Card>
+        <Card className="animate-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" /> {t('dashboard.riskiestApplications')}
@@ -243,7 +253,7 @@ export function DashboardPage() {
                     key={app.id}
                     role="button"
                     tabIndex={0}
-                    className="flex cursor-pointer items-center justify-between rounded border p-3 transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+                    className="card-interactive flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() =>
                       navigate({ to: '/applications/$id', params: { id: app.id } })
                     }

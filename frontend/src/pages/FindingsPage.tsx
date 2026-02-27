@@ -196,8 +196,10 @@ export function FindingsPage() {
         </div>
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="skeleton h-12 rounded-lg" />
+            ))}
           </div>
         ) : (
           <>
