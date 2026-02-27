@@ -118,6 +118,9 @@
       "httpMethod": "HTTP Method"
     },
     "noFindings": "No findings found",
+    "export": "Export",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON",
     "yes": "Yes",
     "no": "No"
   },

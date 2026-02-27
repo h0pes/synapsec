@@ -9,6 +9,7 @@ import { FindingSearchBar } from '@/components/findings/FindingFilters'
 import { SastTable } from '@/components/findings/SastTable'
 import { ScaTable } from '@/components/findings/ScaTable'
 import { DastTable } from '@/components/findings/DastTable'
+import { ExportButton } from '@/components/findings/ExportButton'
 import * as findingsApi from '@/api/findings'
 import type {
   FindingCategory,
@@ -67,6 +68,20 @@ export function FindingsPage() {
             : {},
     [activeTab, sastCategoryFilters, scaCategoryFilters, dastCategoryFilters],
   )
+
+  // Merged filter params for the export button
+  const exportFilters = useMemo<Record<string, string>>(() => {
+    const params: Record<string, string> = {}
+    const category = TAB_TO_CATEGORY[activeTab]
+    if (category) params.category = category
+    if (activeTab === 'all') {
+      if (search) params.search = search
+      Object.assign(params, allColumnFilters)
+    } else {
+      Object.assign(params, activeCategoryFilters)
+    }
+    return params
+  }, [activeTab, search, allColumnFilters, activeCategoryFilters])
 
   const fetchFindings = useCallback(async () => {
     setLoading(true)
@@ -152,9 +167,12 @@ export function FindingsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('nav.findings')}</h1>
-        <span className="text-sm text-muted-foreground">
-          {total} {total === 1 ? t('common.finding') : t('common.findings')}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            {total} {total === 1 ? t('common.finding') : t('common.findings')}
+          </span>
+          <ExportButton filters={exportFilters} />
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
