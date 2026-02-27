@@ -128,8 +128,8 @@
       "riskThreshold": "Min Risk Score",
       "categories": "Categories",
       "layout": "Layout",
-      "hierarchical": "Hierarchical",
-      "forceDirected": "Force-directed"
+      "hierarchical": "Left to Right",
+      "forceDirected": "Top Down"
     },
     "findingPanel": {
       "title": "Finding Details",

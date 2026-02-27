@@ -20,6 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  TOOL_BADGE_STYLES,
+  TOOL_CATEGORY_LABELS,
+} from '@/lib/findings'
 import * as attackChainsApi from '@/api/attack-chains'
 import type { AppAttackChainSummary } from '@/types/attack-chains'
 import type { SeverityLevel } from '@/types/finding'
@@ -30,18 +34,6 @@ const SEVERITY_STYLES: Record<SeverityLevel, string> = {
   Medium: 'bg-yellow-500 text-black hover:bg-yellow-600',
   Low: 'bg-blue-500 text-white hover:bg-blue-600',
   Info: 'bg-gray-400 text-white hover:bg-gray-500',
-}
-
-const TOOL_BADGE_STYLES: Record<string, string> = {
-  sonarqube: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  jfrog_xray: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  tenable_was: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
-}
-
-const TOOL_LABELS: Record<string, string> = {
-  sonarqube: 'SAST',
-  jfrog_xray: 'SCA',
-  tenable_was: 'DAST',
 }
 
 export function AttackChainsPage() {
@@ -132,7 +124,7 @@ export function AttackChainsPage() {
               variant="outline"
               className={TOOL_BADGE_STYLES[tool] ?? 'bg-gray-100 text-gray-800'}
             >
-              {TOOL_LABELS[tool] ?? tool}
+              {TOOL_CATEGORY_LABELS[tool] ?? tool}
             </Badge>
           ))}
         </div>

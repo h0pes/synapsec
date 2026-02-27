@@ -20,6 +20,11 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import {
+  normalizeSeverity,
+  TOOL_DISPLAY_NAMES,
+  CATEGORY_BADGE_STYLES,
+} from '@/lib/findings'
 import { FindingNode } from './FindingNode'
 import { CorrelationEdge } from './CorrelationEdge'
 import { transformAttackChainData } from './transform'
@@ -27,35 +32,9 @@ import { applyDagreLayout } from './layout'
 import type { LayoutDirection } from './layout'
 import type { FindingNode as FindingNodeType } from './transform'
 import type { AppAttackChainDetail, ChainFinding, UncorrelatedFinding } from '@/types/attack-chains'
-import type { SeverityLevel } from '@/types/finding'
 
 const nodeTypes = { finding: FindingNode }
 const edgeTypes = { correlation: CorrelationEdge }
-
-const TOOL_LABELS: Record<string, string> = {
-  sonarqube: 'SonarQube',
-  jfrog_xray: 'JFrog Xray',
-  tenable_was: 'Tenable WAS',
-}
-
-const CATEGORY_BADGE_STYLES: Record<string, string> = {
-  SAST: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  SCA: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  DAST: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
-}
-
-/** Capitalize first letter of a severity string for the SeverityBadge. */
-function normalizeSeverity(raw: string): SeverityLevel {
-  const lower = raw.toLowerCase()
-  const map: Record<string, SeverityLevel> = {
-    critical: 'Critical',
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low',
-    info: 'Info',
-  }
-  return map[lower] ?? 'Info'
-}
 
 interface AttackChainGraphProps {
   detail: AppAttackChainDetail
@@ -125,7 +104,6 @@ function AttackChainGraphInner({ detail }: AttackChainGraphProps) {
           edgeTypes={edgeTypes}
           onNodeClick={handleNodeClick}
           fitView
-          proOptions={{ hideAttribution: true }}
         >
           <Background />
           <Controls />
@@ -180,7 +158,7 @@ function AttackChainGraphInner({ detail }: AttackChainGraphProps) {
                   {t('attackChains.findingPanel.source')}
                 </span>
                 <span className="text-sm">
-                  {TOOL_LABELS[selectedFinding.source_tool] ?? selectedFinding.source_tool}
+                  {TOOL_DISPLAY_NAMES[selectedFinding.source_tool] ?? selectedFinding.source_tool}
                 </span>
               </div>
 

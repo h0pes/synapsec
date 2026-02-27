@@ -15,29 +15,16 @@ import {
 } from '@/components/ui/table'
 import { SeverityBadge } from '@/components/findings/SeverityBadge'
 import { AttackChainGraph } from '@/components/attack-chains/graph/AttackChainGraph'
+import {
+  normalizeSeverity,
+  TOOL_BADGE_STYLES,
+  TOOL_CATEGORY_LABELS,
+  CATEGORY_BADGE_STYLES,
+} from '@/lib/findings'
 import * as attackChainsApi from '@/api/attack-chains'
 import type { AppAttackChainDetail, AttackChain } from '@/types/attack-chains'
-import type { SeverityLevel } from '@/types/finding'
 
 type ViewMode = 'cards' | 'graph'
-
-const TOOL_BADGE_STYLES: Record<string, string> = {
-  sonarqube: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  jfrog_xray: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  tenable_was: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
-}
-
-const TOOL_LABELS: Record<string, string> = {
-  sonarqube: 'SAST',
-  jfrog_xray: 'SCA',
-  tenable_was: 'DAST',
-}
-
-const CATEGORY_BADGE_STYLES: Record<string, string> = {
-  SAST: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  SCA: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  DAST: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
-}
 
 /** Derive a human-readable title for an attack chain. */
 function chainTitle(chain: AttackChain): string {
@@ -45,19 +32,6 @@ function chainTitle(chain: AttackChain): string {
     return chain.findings[0].title
   }
   return chain.group_id
-}
-
-/** Capitalize first letter of a severity string for the SeverityBadge. */
-function normalizeSeverity(raw: string): SeverityLevel {
-  const lower = raw.toLowerCase()
-  const map: Record<string, SeverityLevel> = {
-    critical: 'Critical',
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low',
-    info: 'Info',
-  }
-  return map[lower] ?? 'Info'
 }
 
 export function AttackChainDetailPage() {
@@ -176,7 +150,7 @@ export function AttackChainDetailPage() {
                             variant="outline"
                             className={TOOL_BADGE_STYLES[tool] ?? 'bg-gray-100 text-gray-800'}
                           >
-                            {TOOL_LABELS[tool] ?? tool}
+                            {TOOL_CATEGORY_LABELS[tool] ?? tool}
                           </Badge>
                         ))}
                       </div>
@@ -204,7 +178,7 @@ export function AttackChainDetailPage() {
                           <SeverityBadge severity={normalizeSeverity(finding.normalized_severity)} />
                           <span className="flex-1 truncate">{finding.title}</span>
                           <span className="shrink-0 text-xs text-muted-foreground">
-                            {TOOL_LABELS[finding.source_tool] ?? finding.source_tool}
+                            {TOOL_CATEGORY_LABELS[finding.source_tool] ?? finding.source_tool}
                           </span>
                         </div>
                       ))}
@@ -253,7 +227,7 @@ export function AttackChainDetailPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {TOOL_LABELS[f.source_tool] ?? f.source_tool}
+                          {TOOL_CATEGORY_LABELS[f.source_tool] ?? f.source_tool}
                         </TableCell>
                         <TableCell className="text-sm">{f.status}</TableCell>
                       </TableRow>

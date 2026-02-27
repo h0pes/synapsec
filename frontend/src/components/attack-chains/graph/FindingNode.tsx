@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { NodeProps } from '@xyflow/react'
 import { cn } from '@/lib/utils'
+import { TOOL_DISPLAY_NAMES } from '@/lib/findings'
 import { CATEGORY_COLORS } from './transform'
 import type { FindingNode as FindingNodeType } from './transform'
 
@@ -14,13 +15,6 @@ const SEVERITY_BADGE_STYLES: Record<string, string> = {
   Medium:   'bg-yellow-500 text-black',
   Low:      'bg-blue-500 text-white',
   Info:     'bg-gray-400 text-white',
-}
-
-/** Map source_tool identifiers to short human-readable labels. */
-const TOOL_LABELS: Record<string, string> = {
-  sonarqube:   'SonarQube',
-  jfrog_xray:  'JFrog Xray',
-  tenable_was: 'Tenable WAS',
 }
 
 function truncateTitle(title: string): string {
@@ -43,7 +37,7 @@ function FindingNodeComponent({ data }: NodeProps<FindingNodeType>) {
   const categoryColors = CATEGORY_COLORS[finding.finding_category]
   const borderColor = categoryColors?.border ?? '#6b7280'
   const severityStyle = SEVERITY_BADGE_STYLES[finding.normalized_severity] ?? 'bg-gray-400 text-white'
-  const toolLabel = TOOL_LABELS[finding.source_tool] ?? finding.source_tool
+  const toolLabel = TOOL_DISPLAY_NAMES[finding.source_tool] ?? finding.source_tool
 
   return (
     <>
