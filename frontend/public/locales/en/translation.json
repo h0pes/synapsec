@@ -51,6 +51,7 @@
     "unverified": "unverified",
     "noUnmappedApps": "No unmapped applications",
     "unmappedDescription": "These applications were auto-created from scanner project names during ingestion. Review and verify them, or merge with existing applications.",
+    "back": "Back",
     "all": "All",
     "from": "From",
     "to": "To",
