@@ -18,7 +18,14 @@
     "login": "Sign In",
     "logout": "Sign Out",
     "username": "Username",
-    "password": "Password"
+    "password": "Password",
+    "signIn": "Sign in",
+    "signInSubtitle": "Enter your credentials to access the platform",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "unexpectedError": "An unexpected error occurred",
+    "usernamePlaceholder": "Enter your username",
+    "secureLogin": "Protected by enterprise-grade security"
   },
   "common": {
     "save": "Save",
@@ -67,7 +74,22 @@
       "atRisk": "At Risk",
       "breached": "Breached"
     },
-    "other": "Other"
+    "other": "Other",
+    "awaitingTriage": "Awaiting Triage",
+    "findingsInNewStatus": "findings in New status",
+    "unmappedApps": "Unmapped Apps",
+    "unverifiedApplications": "unverified applications",
+    "slaStatus": "SLA Status",
+    "openFindings": "Open Findings",
+    "recentImports": "Recent Imports",
+    "noRecentImports": "No recent imports",
+    "noFile": "No file",
+    "records": "records",
+    "new": "new",
+    "riskiestApplications": "Riskiest Applications",
+    "noApplicationData": "No application data",
+    "total": "total",
+    "loadError": "Unable to load dashboard data."
   },
   "dedup": {
     "title": "Deduplication Dashboard",

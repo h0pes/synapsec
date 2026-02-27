@@ -54,7 +54,7 @@ export function DashboardPage() {
     return (
       <div className="space-y-4">
         <PageHeader title={t('nav.dashboard')} />
-        <p className="text-muted-foreground">Unable to load dashboard data.</p>
+        <p className="text-muted-foreground">{t('dashboard.loadError')}</p>
       </div>
     )
   }
@@ -70,12 +70,12 @@ export function DashboardPage() {
           onClick={() => navigate({ to: '/triage' })}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Awaiting Triage</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.awaitingTriage')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.triage_count}</div>
-            <p className="text-xs text-muted-foreground">findings in New status</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.findingsInNewStatus')}</p>
           </CardContent>
         </Card>
 
@@ -84,25 +84,25 @@ export function DashboardPage() {
           onClick={() => navigate({ to: '/unmapped' })}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unmapped Apps</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.unmappedApps')}</CardTitle>
             <FileWarning className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.unmapped_apps_count}</div>
-            <p className="text-xs text-muted-foreground">unverified applications</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.unverifiedApplications')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SLA Status</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.slaStatus')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-3">
               <span className="text-2xl font-bold text-green-600">{stats.sla_summary.on_track}</span>
-              <span className="text-sm text-yellow-600">{stats.sla_summary.at_risk} at risk</span>
-              <span className="text-sm text-destructive">{stats.sla_summary.breached} breached</span>
+              <span className="text-sm text-yellow-600">{stats.sla_summary.at_risk} {t('dashboard.sla.atRisk')}</span>
+              <span className="text-sm text-destructive">{stats.sla_summary.breached} {t('dashboard.sla.breached')}</span>
             </div>
           </CardContent>
         </Card>
@@ -112,7 +112,7 @@ export function DashboardPage() {
           onClick={() => navigate({ to: '/findings' })}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Open Findings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.openFindings')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -172,12 +172,12 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Upload className="h-4 w-4" /> Recent Imports
+              <Upload className="h-4 w-4" /> {t('dashboard.recentImports')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.recent_ingestions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No recent imports</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.noRecentImports')}</p>
             ) : (
               <div className="space-y-3">
                 {stats.recent_ingestions.map((ing) => (
@@ -188,7 +188,7 @@ export function DashboardPage() {
                     <div>
                       <p className="text-sm font-medium">{ing.source_tool}</p>
                       <p className="text-xs text-muted-foreground">
-                        {ing.file_name || 'No file'} — {ing.total_records} records, {ing.new_findings} new
+                        {ing.file_name || t('dashboard.noFile')} — {ing.total_records} {t('dashboard.records')}, {ing.new_findings} {t('dashboard.new')}
                       </p>
                     </div>
                     <div className="text-right">
@@ -221,12 +221,12 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" /> Riskiest Applications
+              <TrendingUp className="h-4 w-4" /> {t('dashboard.riskiestApplications')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.top_risky_apps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No application data</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.noApplicationData')}</p>
             ) : (
               <div className="space-y-3">
                 {stats.top_risky_apps.map((app) => (
@@ -243,17 +243,17 @@ export function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {app.critical_count > 0 && (
-                        <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                          {app.critical_count} Critical
+                        <Badge variant="outline" className="bg-severity-critical/10 text-severity-critical">
+                          {app.critical_count} {t('dashboard.severity.critical')}
                         </Badge>
                       )}
                       {app.high_count > 0 && (
-                        <Badge variant="outline" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                          {app.high_count} High
+                        <Badge variant="outline" className="bg-severity-high/10 text-severity-high">
+                          {app.high_count} {t('dashboard.severity.high')}
                         </Badge>
                       )}
                       <span className="text-sm text-muted-foreground">
-                        {app.finding_count} total
+                        {app.finding_count} {t('dashboard.total')}
                       </span>
                     </div>
                   </div>

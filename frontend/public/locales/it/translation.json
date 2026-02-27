@@ -18,7 +18,14 @@
     "login": "Accedi",
     "logout": "Esci",
     "username": "Nome utente",
-    "password": "Password"
+    "password": "Password",
+    "signIn": "Accedi",
+    "signInSubtitle": "Inserisci le tue credenziali per accedere alla piattaforma",
+    "usernameRequired": "Il nome utente è obbligatorio",
+    "passwordRequired": "La password è obbligatoria",
+    "unexpectedError": "Si è verificato un errore imprevisto",
+    "usernamePlaceholder": "Inserisci il nome utente",
+    "secureLogin": "Protetto da sicurezza di livello enterprise"
   },
   "common": {
     "save": "Salva",
@@ -67,7 +74,22 @@
       "atRisk": "A Rischio",
       "breached": "Violato"
     },
-    "other": "Altro"
+    "other": "Altro",
+    "awaitingTriage": "In Attesa di Triage",
+    "findingsInNewStatus": "risultati in stato Nuovo",
+    "unmappedApps": "App Non Mappate",
+    "unverifiedApplications": "applicazioni non verificate",
+    "slaStatus": "Stato SLA",
+    "openFindings": "Risultati Aperti",
+    "recentImports": "Importazioni Recenti",
+    "noRecentImports": "Nessuna importazione recente",
+    "noFile": "Nessun file",
+    "records": "record",
+    "new": "nuovi",
+    "riskiestApplications": "Applicazioni Più Rischiose",
+    "noApplicationData": "Nessun dato applicazione",
+    "total": "totale",
+    "loadError": "Impossibile caricare i dati della dashboard."
   },
   "dedup": {
     "title": "Dashboard Deduplicazione",
