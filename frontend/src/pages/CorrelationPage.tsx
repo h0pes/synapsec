@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/ui/page-header'
 import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
@@ -54,7 +55,7 @@ export function CorrelationPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('correlation.title')}</h1>
+      <PageHeader title={t('correlation.title')} />
 
       <Tabs defaultValue="rules">
         <TabsList>

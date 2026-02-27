@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from '@tanstack/react-router'
 import { CheckCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import { TablePagination } from '@/components/ui/table-pagination'
 import {
@@ -57,15 +58,12 @@ export function UnmappedAppsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{t('nav.unmapped')}</h1>
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-            <AlertTriangle className="mr-1 h-3 w-3" />
-            {total} unverified
-          </Badge>
-        </div>
-      </div>
+      <PageHeader title={t('nav.unmapped')}>
+        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          <AlertTriangle className="mr-1 h-3 w-3" />
+          {total} unverified
+        </Badge>
+      </PageHeader>
 
       <p className="text-sm text-muted-foreground">
         These applications were auto-created from scanner project names during ingestion.

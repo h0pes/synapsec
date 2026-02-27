@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { PageHeader } from '@/components/ui/page-header'
 import * as applicationsApi from '@/api/applications'
 import type { ApplicationSummary, AssetCriticality, AppStatus } from '@/types/application'
 
@@ -149,12 +150,11 @@ export function ApplicationsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.applications')}</h1>
+      <PageHeader title={t('nav.applications')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? 'application' : 'applications'}
         </span>
-      </div>
+      </PageHeader>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">

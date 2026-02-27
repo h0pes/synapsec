@@ -9,6 +9,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -165,7 +166,7 @@ export function DeduplicationPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('dedup.title')}</h1>
+      <PageHeader title={t('dedup.title')} />
 
       {/* Section 1 — Statistics cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">

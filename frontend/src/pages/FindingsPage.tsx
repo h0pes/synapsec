@@ -10,6 +10,7 @@ import { SastTable } from '@/components/findings/SastTable'
 import { ScaTable } from '@/components/findings/ScaTable'
 import { DastTable } from '@/components/findings/DastTable'
 import { ExportButton } from '@/components/findings/ExportButton'
+import { PageHeader } from '@/components/ui/page-header'
 import * as findingsApi from '@/api/findings'
 import type {
   FindingCategory,
@@ -165,15 +166,12 @@ export function FindingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.findings')}</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
-            {total} {total === 1 ? t('common.finding') : t('common.findings')}
-          </span>
-          <ExportButton filters={exportFilters} />
-        </div>
-      </div>
+      <PageHeader title={t('nav.findings')}>
+        <span className="text-sm text-muted-foreground">
+          {total} {total === 1 ? t('common.finding') : t('common.findings')}
+        </span>
+        <ExportButton filters={exportFilters} />
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <div className="flex items-center justify-between">

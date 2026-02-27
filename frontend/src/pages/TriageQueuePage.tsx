@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SeverityBadge } from '@/components/findings/SeverityBadge'
+import { PageHeader } from '@/components/ui/page-header'
 import * as findingsApi from '@/api/findings'
 import type { FindingSummary } from '@/types/finding'
 
@@ -71,12 +72,11 @@ export function TriageQueuePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.triage')}</h1>
+      <PageHeader title={t('nav.triage')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? 'finding' : 'findings'} awaiting triage
         </span>
-      </div>
+      </PageHeader>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">

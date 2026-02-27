@@ -10,6 +10,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import { SeverityBadge } from '@/components/findings/SeverityBadge'
 import { SeverityChart } from '@/components/dashboard/SeverityChart'
@@ -52,7 +53,7 @@ export function DashboardPage() {
   if (!stats) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{t('nav.dashboard')}</h1>
+        <PageHeader title={t('nav.dashboard')} />
         <p className="text-muted-foreground">Unable to load dashboard data.</p>
       </div>
     )
@@ -60,7 +61,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('nav.dashboard')}</h1>
+      <PageHeader title={t('nav.dashboard')} />
 
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

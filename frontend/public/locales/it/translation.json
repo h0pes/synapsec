@@ -139,6 +139,19 @@
       "webAppName": "Nome DNS",
       "httpMethod": "Metodo HTTP"
     },
+    "status": {
+      "New": "Nuovo",
+      "Confirmed": "Confermato",
+      "In_Remediation": "In Rimediazione",
+      "Mitigated": "Mitigato",
+      "Verified": "Verificato",
+      "Closed": "Chiuso",
+      "False_Positive_Requested": "FP Richiesto",
+      "False_Positive": "Falso Positivo",
+      "Risk_Accepted": "Rischio Accettato",
+      "Deferred_Remediation": "Differito",
+      "Invalidated": "Invalidato"
+    },
     "noFindings": "Nessun risultato trovato",
     "export": "Esporta",
     "exportCsv": "Esporta CSV",

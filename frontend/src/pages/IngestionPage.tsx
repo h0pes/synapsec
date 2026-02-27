@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
 import { FileUpload } from '@/components/ingestion/FileUpload'
 import { IngestionHistory } from '@/components/ingestion/IngestionHistory'
 import type { IngestionResult } from '@/api/ingestion'
@@ -18,7 +19,7 @@ export function IngestionPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('nav.ingestion')}</h1>
+      <PageHeader title={t('nav.ingestion')} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <FileUpload onComplete={handleComplete} />
