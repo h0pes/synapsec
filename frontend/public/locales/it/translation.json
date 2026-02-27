@@ -110,9 +110,12 @@
       "fixedVersion": "Versione Corretta",
       "dependencyType": "Tipo Dipendenza",
       "knownExploited": "Exploit Noto",
+      "branch": "Branch",
+      "packageType": "Tipo Pacchetto",
       "targetUrl": "URL Obiettivo",
       "parameter": "Parametro",
-      "webAppName": "Applicazione Web"
+      "webAppName": "Nome DNS",
+      "httpMethod": "Metodo HTTP"
     },
     "noFindings": "Nessun risultato trovato",
     "yes": "S\u00ec",

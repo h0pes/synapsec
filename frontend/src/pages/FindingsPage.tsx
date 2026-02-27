@@ -1,22 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { SortingState } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { FindingList } from '@/components/findings/FindingList'
 import { FindingFiltersPanel } from '@/components/findings/FindingFilters'
-import { SeverityBadge } from '@/components/findings/SeverityBadge'
-import { FindingStatusBadge } from '@/components/findings/FindingStatusBadge'
+import { SastTable } from '@/components/findings/SastTable'
+import { ScaTable } from '@/components/findings/ScaTable'
+import { DastTable } from '@/components/findings/DastTable'
 import * as findingsApi from '@/api/findings'
 import type {
   FindingCategory,
@@ -58,6 +50,23 @@ export function FindingsPage() {
   const [loading, setLoading] = useState(false)
   const perPage = 25
 
+  // Per-tab category filter state (column-level filters from inline table headers)
+  const [sastCategoryFilters, setSastCategoryFilters] = useState<Record<string, string>>({})
+  const [scaCategoryFilters, setScaCategoryFilters] = useState<Record<string, string>>({})
+  const [dastCategoryFilters, setDastCategoryFilters] = useState<Record<string, string>>({})
+
+  const activeCategoryFilters = useMemo(
+    () =>
+      activeTab === 'sast'
+        ? sastCategoryFilters
+        : activeTab === 'sca'
+          ? scaCategoryFilters
+          : activeTab === 'dast'
+            ? dastCategoryFilters
+            : {},
+    [activeTab, sastCategoryFilters, scaCategoryFilters, dastCategoryFilters],
+  )
+
   const fetchFindings = useCallback(async () => {
     setLoading(true)
     try {
@@ -74,6 +83,7 @@ export function FindingsPage() {
           categoryFilters,
           page,
           perPage,
+          activeCategoryFilters,
         )
         setCategoryFindings(result.items)
         setFindings([])
@@ -85,7 +95,7 @@ export function FindingsPage() {
     } finally {
       setLoading(false)
     }
-  }, [filters, page, activeTab])
+  }, [filters, page, activeTab, activeCategoryFilters])
 
   useEffect(() => {
     fetchFindings()
@@ -109,6 +119,21 @@ export function FindingsPage() {
   function handleRowClick(id: string) {
     void navigate({ to: '/findings/$id', params: { id } })
   }
+
+  const handleSastFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setSastCategoryFilters(newFilters)
+    setPage(1)
+  }, [])
+
+  const handleScaFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setScaCategoryFilters(newFilters)
+    setPage(1)
+  }, [])
+
+  const handleDastFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setDastCategoryFilters(newFilters)
+    setPage(1)
+  }, [])
 
   return (
     <div className="space-y-4">
@@ -147,6 +172,9 @@ export function FindingsPage() {
               <SastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleSastFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
@@ -154,6 +182,9 @@ export function FindingsPage() {
               <ScaTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleScaFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
@@ -161,6 +192,9 @@ export function FindingsPage() {
               <DastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleDastFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
@@ -193,245 +227,6 @@ export function FindingsPage() {
           </>
         )}
       </Tabs>
-    </div>
-  )
-}
-
-/* ---------- SAST category table ---------- */
-
-function SastTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 200 }}>{t('findings.columns.filePath')}</TableHead>
-            <TableHead style={{ width: 60 }}>{t('findings.columns.lineNumber')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.ruleId')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.project')}</TableHead>
-            <TableHead style={{ width: 90 }}>{t('findings.columns.language')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate font-mono text-xs" title={f.category_data?.file_path}>
-                  {f.category_data?.file_path ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.line_number ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  {f.category_data?.rule_id ?? '-'}
-                </TableCell>
-                <TableCell>{f.category_data?.project ?? '-'}</TableCell>
-                <TableCell>
-                  {f.category_data?.language ? (
-                    <Badge variant="outline">{f.category_data.language}</Badge>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-/* ---------- SCA category table ---------- */
-
-function ScaTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.packageName')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.packageVersion')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.fixedVersion')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.dependencyType')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.knownExploited')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.package_name ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.package_version ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.fixed_version ?? (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.dependency_type ? (
-                    <Badge variant="outline">{f.category_data.dependency_type}</Badge>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.known_exploited != null ? (
-                    f.category_data.known_exploited ? (
-                      <Badge className="bg-red-600 text-white">{t('findings.yes')}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">{t('findings.no')}</span>
-                    )
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-/* ---------- DAST category table ---------- */
-
-function DastTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 250 }}>{t('findings.columns.targetUrl')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.parameter')}</TableHead>
-            <TableHead style={{ width: 180 }}>{t('findings.columns.webAppName')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="max-w-[250px] truncate font-mono text-xs" title={f.category_data?.target_url}>
-                  {f.category_data?.target_url ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.parameter ?? '-'}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.web_application_name ?? '-'}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
     </div>
   )
 }

@@ -110,9 +110,12 @@
       "fixedVersion": "Fixed Version",
       "dependencyType": "Dependency Type",
       "knownExploited": "Known Exploited",
+      "branch": "Branch",
+      "packageType": "Package Type",
       "targetUrl": "Target URL",
       "parameter": "Parameter",
-      "webAppName": "Web Application"
+      "webAppName": "DNS Name",
+      "httpMethod": "HTTP Method"
     },
     "noFindings": "No findings found",
     "yes": "Yes",
