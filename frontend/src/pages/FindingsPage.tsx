@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { SortingState } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { TablePagination } from '@/components/ui/table-pagination'
 import { FindingList } from '@/components/findings/FindingList'
 import { FindingSearchBar } from '@/components/findings/FindingFilters'
 import { SastTable } from '@/components/findings/SastTable'
@@ -236,29 +236,7 @@ export function FindingsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('common.page')} {page} {t('common.of')} {totalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
-                    {t('common.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    {t('common.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
             )}
           </>
         )}

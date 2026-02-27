@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -337,29 +338,7 @@ export function DeduplicationPage() {
             </div>
 
             {pendingTotalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('dedup.pagination.page')} {pendingPage} {t('dedup.pagination.of')} {pendingTotalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pendingPage <= 1}
-                    onClick={() => setPendingPage((p) => p - 1)}
-                  >
-                    {t('dedup.pagination.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pendingPage >= pendingTotalPages}
-                    onClick={() => setPendingPage((p) => p + 1)}
-                  >
-                    {t('dedup.pagination.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={pendingPage} totalPages={pendingTotalPages} onPageChange={setPendingPage} />
             )}
           </>
         )}
@@ -428,29 +407,7 @@ export function DeduplicationPage() {
             </div>
 
             {historyTotalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('dedup.pagination.page')} {historyPage} {t('dedup.pagination.of')} {historyTotalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={historyPage <= 1}
-                    onClick={() => setHistoryPage((p) => p - 1)}
-                  >
-                    {t('dedup.pagination.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={historyPage >= historyTotalPages}
-                    onClick={() => setHistoryPage((p) => p + 1)}
-                  >
-                    {t('dedup.pagination.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={historyPage} totalPages={historyTotalPages} onPageChange={setHistoryPage} />
             )}
           </>
         )}
