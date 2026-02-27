@@ -127,7 +127,7 @@ export function LoginPage() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <div role="alert" className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 <Lock className="h-4 w-4 shrink-0" />
                 {error}
               </div>

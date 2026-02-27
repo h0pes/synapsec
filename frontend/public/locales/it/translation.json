@@ -89,7 +89,13 @@
     "riskiestApplications": "Applicazioni Più Rischiose",
     "noApplicationData": "Nessun dato applicazione",
     "total": "totale",
-    "loadError": "Impossibile caricare i dati della dashboard."
+    "loadError": "Impossibile caricare i dati della dashboard.",
+    "ingestionStatus": {
+      "Completed": "Completato",
+      "Failed": "Fallito",
+      "Processing": "In Elaborazione",
+      "Pending": "In Attesa"
+    }
   },
   "dedup": {
     "title": "Dashboard Deduplicazione",

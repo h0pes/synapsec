@@ -66,8 +66,11 @@ export function DashboardPage() {
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50"
+          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          role="button"
+          tabIndex={0}
           onClick={() => navigate({ to: '/triage' })}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/triage' }) } }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.awaitingTriage')}</CardTitle>
@@ -80,8 +83,11 @@ export function DashboardPage() {
         </Card>
 
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50"
+          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          role="button"
+          tabIndex={0}
           onClick={() => navigate({ to: '/unmapped' })}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/unmapped' }) } }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.unmappedApps')}</CardTitle>
@@ -108,8 +114,11 @@ export function DashboardPage() {
         </Card>
 
         <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50"
+          className="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+          role="button"
+          tabIndex={0}
           onClick={() => navigate({ to: '/findings' })}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/findings' }) } }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('dashboard.openFindings')}</CardTitle>
@@ -202,7 +211,7 @@ export function DashboardPage() {
                               : ''
                         }
                       >
-                        {ing.status}
+                        {t(`dashboard.ingestionStatus.${ing.status}`, ing.status)}
                       </Badge>
                       {ing.completed_at && (
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -232,10 +241,13 @@ export function DashboardPage() {
                 {stats.top_risky_apps.map((app) => (
                   <div
                     key={app.id}
-                    className="flex cursor-pointer items-center justify-between rounded border p-3 transition-colors hover:bg-muted/50"
+                    role="button"
+                    tabIndex={0}
+                    className="flex cursor-pointer items-center justify-between rounded border p-3 transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() =>
                       navigate({ to: '/applications/$id', params: { id: app.id } })
                     }
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/applications/$id', params: { id: app.id } }) } }}
                   >
                     <div>
                       <p className="text-sm font-medium">{app.app_name}</p>

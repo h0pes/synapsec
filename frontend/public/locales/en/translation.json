@@ -89,7 +89,13 @@
     "riskiestApplications": "Riskiest Applications",
     "noApplicationData": "No application data",
     "total": "total",
-    "loadError": "Unable to load dashboard data."
+    "loadError": "Unable to load dashboard data.",
+    "ingestionStatus": {
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Processing": "Processing",
+      "Pending": "Pending"
+    }
   },
   "dedup": {
     "title": "Deduplication Dashboard",
