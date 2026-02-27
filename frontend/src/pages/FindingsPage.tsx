@@ -145,22 +145,30 @@ export function FindingsPage() {
   }
 
   const handleAllFiltersChange = useCallback((newFilters: Record<string, string>) => {
-    setAllColumnFilters(newFilters)
+    setAllColumnFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
     setPage(1)
   }, [])
 
   const handleSastFiltersChange = useCallback((newFilters: Record<string, string>) => {
-    setSastCategoryFilters(newFilters)
+    setSastCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
     setPage(1)
   }, [])
 
   const handleScaFiltersChange = useCallback((newFilters: Record<string, string>) => {
-    setScaCategoryFilters(newFilters)
+    setScaCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
     setPage(1)
   }, [])
 
   const handleDastFiltersChange = useCallback((newFilters: Record<string, string>) => {
-    setDastCategoryFilters(newFilters)
+    setDastCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
     setPage(1)
   }, [])
 
