@@ -86,10 +86,7 @@ export function FindingsPage() {
         setTotal(result.total)
         setTotalPages(result.total_pages)
       } else {
-        const filters: FindingFilters = {
-          category,
-          ...(search ? { search } : {}),
-        }
+        const filters: FindingFilters = { category }
         const result = await findingsApi.listFindingsWithCategory(
           filters,
           page,
@@ -168,7 +165,9 @@ export function FindingsPage() {
             <TabsTrigger value="sca">{t('findings.tabs.sca')}</TabsTrigger>
             <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
           </TabsList>
-          <FindingSearchBar search={search} onSearchChange={handleSearchChange} />
+          {activeTab === 'all' && (
+            <FindingSearchBar search={search} onSearchChange={handleSearchChange} />
+          )}
         </div>
 
         {loading ? (
