@@ -32,6 +32,10 @@ export type DashboardStats = {
     critical_count: number
     high_count: number
   }[]
+  findings_by_source: {
+    source_tool: string
+    count: number
+  }[]
 }
 
 /** GET /dashboard/stats — fetch dashboard statistics. */

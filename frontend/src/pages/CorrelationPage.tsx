@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -53,8 +54,8 @@ export function CorrelationPage() {
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('correlation.title')}</h1>
+    <div className="animate-in space-y-4">
+      <PageHeader title={t('correlation.title')} />
 
       <Tabs defaultValue="rules">
         <TabsList>
@@ -62,11 +63,11 @@ export function CorrelationPage() {
           <TabsTrigger value="groups">{t('correlation.tabs.groups')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rules">
+        <TabsContent value="rules" className="animate-in">
           <RulesTab />
         </TabsContent>
 
-        <TabsContent value="groups">
+        <TabsContent value="groups" className="animate-in">
           <GroupsTab />
         </TabsContent>
       </Tabs>
@@ -99,8 +100,11 @@ function RulesTab() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-3 mt-4">
+        <div className="skeleton h-10 rounded-lg stagger-1" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+        ))}
       </div>
     )
   }
@@ -114,7 +118,7 @@ function RulesTab() {
   }
 
   return (
-    <div className="mt-4 rounded-md border">
+    <div className="mt-4 rounded-md border shadow-[var(--shadow-card)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -127,7 +131,7 @@ function RulesTab() {
         </TableHeader>
         <TableBody>
           {rules.map((rule) => (
-            <TableRow key={rule.id}>
+            <TableRow key={rule.id} className="transition-colors hover:bg-muted/50">
               <TableCell className="font-medium">{rule.name}</TableCell>
               <TableCell>
                 <Badge variant="outline">{formatRuleType(rule.rule_type)}</Badge>
@@ -218,8 +222,11 @@ function GroupsTab() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="space-y-3 mt-4">
+        <div className="skeleton h-10 rounded-lg stagger-1" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+        ))}
       </div>
     )
   }
@@ -240,7 +247,7 @@ function GroupsTab() {
         </span>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border shadow-[var(--shadow-card)]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -267,29 +274,7 @@ function GroupsTab() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {t('correlation.groups.page')} {page} / {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              {t('correlation.groups.previous')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              {t('correlation.groups.next')}
-            </Button>
-          </div>
-        </div>
+        <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
       )}
     </div>
   )
@@ -318,8 +303,11 @@ function GroupRow({
   return (
     <>
       <TableRow
-        className="cursor-pointer hover:bg-muted/50"
+        className="cursor-pointer transition-colors hover:bg-muted/50"
+        role="button"
+        tabIndex={0}
         onClick={() => onToggle(group.id)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(group.id) } }}
       >
         <TableCell className="w-[40px]">
           {isExpanded ? (

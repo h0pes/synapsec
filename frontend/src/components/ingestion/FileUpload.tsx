@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Upload, FileText, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -18,9 +19,24 @@ type Props = {
 }
 
 export function FileUpload({ onComplete }: Props) {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [parserType, setParserType] = useState('sonarqube')
-  const [format, setFormat] = useState('json')
+  const [format, setFormat] = useState('csv')
+
+  const defaultFormats: Record<string, string> = {
+    sonarqube: 'csv',
+    sarif: 'sarif',
+    jfrog_xray: 'json',
+    tenable_was: 'csv',
+  }
+
+  function handleParserTypeChange(value: string) {
+    setParserType(value)
+    if (defaultFormats[value]) {
+      setFormat(defaultFormats[value])
+    }
+  }
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,7 +76,7 @@ export function FileUpload({ onComplete }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Import Findings</CardTitle>
+        <CardTitle>{t('ingestion.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Drop zone */}
@@ -89,6 +105,7 @@ export function FileUpload({ onComplete }: Props) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={t('ingestion.clearFile')}
                 onClick={() => setFile(null)}
               >
                 <X className="h-4 w-4" />
@@ -98,9 +115,9 @@ export function FileUpload({ onComplete }: Props) {
             <>
               <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Drag and drop a file here, or{' '}
+                {t('ingestion.dragDropText')}{' '}
                 <label className="cursor-pointer font-medium text-primary underline-offset-4 hover:underline">
-                  browse
+                  {t('ingestion.browse')}
                   <input
                     type="file"
                     className="hidden"
@@ -110,7 +127,7 @@ export function FileUpload({ onComplete }: Props) {
                 </label>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Supports JSON, CSV, XML, SARIF
+                {t('ingestion.supportedFormats')}
               </p>
             </>
           )}
@@ -119,19 +136,21 @@ export function FileUpload({ onComplete }: Props) {
         {/* Options */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Parser Type</Label>
-            <Select value={parserType} onValueChange={setParserType}>
+            <Label>{t('ingestion.parserType')}</Label>
+            <Select value={parserType} onValueChange={handleParserTypeChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sonarqube">SonarQube</SelectItem>
                 <SelectItem value="sarif">SARIF</SelectItem>
+                <SelectItem value="jfrog_xray">JFrog Xray</SelectItem>
+                <SelectItem value="tenable_was">Tenable WAS</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Format</Label>
+            <Label>{t('ingestion.format')}</Label>
             <Select value={format} onValueChange={setFormat}>
               <SelectTrigger>
                 <SelectValue />
@@ -159,12 +178,12 @@ export function FileUpload({ onComplete }: Props) {
           {uploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Uploading...
+              {t('ingestion.uploading')}
             </>
           ) : (
             <>
               <Upload className="mr-2 h-4 w-4" />
-              Upload
+              {t('ingestion.upload')}
             </>
           )}
         </Button>

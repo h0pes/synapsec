@@ -51,9 +51,20 @@ pub struct AppAttackChainDetail {
 pub struct AttackChain {
     pub group_id: Uuid,
     pub findings: Vec<ChainFinding>,
+    pub relationships: Vec<ChainRelationship>,
     pub tool_coverage: Vec<String>,
     pub max_severity: String,
     pub relationship_count: i64,
+}
+
+/// Relationship edge within an attack chain.
+#[derive(Debug, Serialize)]
+pub struct ChainRelationship {
+    pub id: Uuid,
+    pub source_finding_id: Uuid,
+    pub target_finding_id: Uuid,
+    pub relationship_type: String,
+    pub confidence: Option<String>,
 }
 
 /// Finding within an attack chain.
@@ -127,11 +138,21 @@ struct FindingRow {
     status: String,
 }
 
-/// Row for a relationship edge.
+/// Row for a relationship edge (union-find grouping).
 #[derive(Debug, sqlx::FromRow)]
 struct RelationshipEdge {
     source_finding_id: Uuid,
     target_finding_id: Uuid,
+}
+
+/// Row for a detailed relationship edge (API response).
+#[derive(Debug, sqlx::FromRow)]
+struct DetailedRelationshipEdge {
+    id: Uuid,
+    source_finding_id: Uuid,
+    target_finding_id: Uuid,
+    relationship_type: String,
+    confidence: Option<String>,
 }
 
 /// Row for an application lookup.
@@ -375,6 +396,23 @@ pub async fn get_by_app(
     .fetch_all(pool)
     .await?;
 
+    // Step 3b: Fetch detailed relationship edges for the API response
+    let detailed_edges = sqlx::query_as::<_, DetailedRelationshipEdge>(
+        r#"
+        SELECT fr.id,
+               fr.source_finding_id,
+               fr.target_finding_id,
+               fr.relationship_type::text AS relationship_type,
+               fr.confidence::text AS confidence
+        FROM finding_relationships fr
+        WHERE (fr.source_finding_id = ANY($1) OR fr.target_finding_id = ANY($1))
+          AND fr.relationship_type IN ('correlated_with', 'grouped_under')
+        "#,
+    )
+    .bind(&finding_ids)
+    .fetch_all(pool)
+    .await?;
+
     // Step 4: Build connected components (chains) via union-find
     let chains = build_chains(&all_findings, &edges);
 
@@ -409,13 +447,26 @@ pub async fn get_by_app(
                 .map(|rank| severity_label(rank).to_string())
                 .unwrap_or_else(|| "Info".to_string());
 
-            // Count relationships within this chain
+            // Collect relationships belonging to this chain
             let chain_ids: std::collections::HashSet<Uuid> =
                 chain_findings.iter().map(|f| f.id).collect();
-            let relationship_count = edges
+
+            let relationships: Vec<ChainRelationship> = detailed_edges
                 .iter()
-                .filter(|e| chain_ids.contains(&e.source_finding_id) && chain_ids.contains(&e.target_finding_id))
-                .count() as i64;
+                .filter(|e| {
+                    chain_ids.contains(&e.source_finding_id)
+                        && chain_ids.contains(&e.target_finding_id)
+                })
+                .map(|e| ChainRelationship {
+                    id: e.id,
+                    source_finding_id: e.source_finding_id,
+                    target_finding_id: e.target_finding_id,
+                    relationship_type: e.relationship_type.clone(),
+                    confidence: e.confidence.clone(),
+                })
+                .collect();
+
+            let relationship_count = relationships.len() as i64;
 
             let findings: Vec<ChainFinding> = chain_findings
                 .iter()
@@ -432,6 +483,7 @@ pub async fn get_by_app(
             attack_chains.push(AttackChain {
                 group_id,
                 findings,
+                relationships,
                 tool_coverage,
                 max_severity,
                 relationship_count,

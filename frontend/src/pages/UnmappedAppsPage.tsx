@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from '@tanstack/react-router'
 import { CheckCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -55,33 +57,32 @@ export function UnmappedAppsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{t('nav.unmapped')}</h1>
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-            <AlertTriangle className="mr-1 h-3 w-3" />
-            {total} unverified
-          </Badge>
-        </div>
-      </div>
+    <div className="animate-in space-y-4">
+      <PageHeader title={t('nav.unmapped')}>
+        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          <AlertTriangle className="mr-1 h-3 w-3" />
+          {total} {t('common.unverified')}
+        </Badge>
+      </PageHeader>
 
-      <p className="text-sm text-muted-foreground">
-        These applications were auto-created from scanner project names during ingestion.
-        Review and verify them, or merge with existing applications.
+      <p className="animate-in stagger-1 text-sm text-muted-foreground">
+        {t('common.unmappedDescription')}
       </p>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common.loading')}
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-1" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+          ))}
         </div>
       ) : apps.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          No unmapped applications
+          {t('common.noUnmappedApps')}
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -94,13 +95,16 @@ export function UnmappedAppsPage() {
               </TableHeader>
               <TableBody>
                 {apps.map((app) => (
-                  <TableRow key={app.id}>
+                  <TableRow key={app.id} className="transition-colors hover:bg-muted/50">
                     <TableCell className="font-mono text-sm">{app.app_code}</TableCell>
                     <TableCell
-                      className="cursor-pointer font-medium hover:underline"
+                      className="cursor-pointer font-medium hover:underline hover:text-primary"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/applications/$id', params: { id: app.id } })
                       }
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/applications/$id', params: { id: app.id } }) } }}
                     >
                       {app.app_name}
                     </TableCell>
@@ -129,29 +133,7 @@ export function UnmappedAppsPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+            <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}

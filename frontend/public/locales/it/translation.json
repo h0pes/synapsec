@@ -12,13 +12,25 @@
     "unmapped": "App Non Mappate",
     "deduplication": "Deduplicazione",
     "correlation": "Correlazione",
-    "attack_chains": "Catene di Attacco"
+    "attack_chains": "Catene di Attacco",
+    "sidebar": "Barra laterale applicazione",
+    "mainNavigation": "Navigazione principale",
+    "expandSidebar": "Espandi barra laterale",
+    "collapseSidebar": "Comprimi barra laterale",
+    "pipeline": "Pipeline"
   },
   "auth": {
     "login": "Accedi",
     "logout": "Esci",
     "username": "Nome utente",
-    "password": "Password"
+    "password": "Password",
+    "signIn": "Accedi",
+    "signInSubtitle": "Inserisci le tue credenziali per accedere alla piattaforma",
+    "usernameRequired": "Il nome utente è obbligatorio",
+    "passwordRequired": "La password è obbligatoria",
+    "unexpectedError": "Si è verificato un errore imprevisto",
+    "usernamePlaceholder": "Inserisci il nome utente",
+    "secureLogin": "Protetto da sicurezza di livello enterprise"
   },
   "common": {
     "save": "Salva",
@@ -33,8 +45,69 @@
     "of": "di",
     "previous": "Precedente",
     "next": "Successivo",
+    "pagination": "Paginazione",
     "finding": "risultato",
-    "findings": "risultati"
+    "findings": "risultati",
+    "application": "applicazione",
+    "applications": "applicazioni",
+    "awaitingTriage": "in attesa di triage",
+    "noFindingsAwaitingTriage": "Nessun risultato in attesa di triage",
+    "noApplicationsFound": "Nessuna applicazione trovata",
+    "unverified": "non verificate",
+    "noUnmappedApps": "Nessuna applicazione non mappata",
+    "unmappedDescription": "Queste applicazioni sono state create automaticamente dai nomi dei progetti degli scanner durante l'importazione. Verificale o uniscile con applicazioni esistenti.",
+    "back": "Indietro",
+    "all": "Tutti",
+    "from": "Da",
+    "to": "A",
+    "yes": "Sì",
+    "no": "No",
+    "skipToContent": "Vai al contenuto principale",
+    "switchToLight": "Passa al tema chiaro",
+    "switchToDark": "Passa al tema scuro",
+    "switchLanguage": "Cambia lingua in {{language}}"
+  },
+  "dashboard": {
+    "charts": {
+      "severityDistribution": "Distribuzione per Gravit\u00e0",
+      "findingsBySource": "Risultati per Sorgente",
+      "riskiestApps": "Applicazioni pi\u00f9 a Rischio",
+      "slaCompliance": "Conformit\u00e0 SLA"
+    },
+    "severity": {
+      "critical": "Critico",
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Basso",
+      "info": "Info"
+    },
+    "sla": {
+      "onTrack": "In Regola",
+      "atRisk": "A Rischio",
+      "breached": "Violato"
+    },
+    "other": "Altro",
+    "awaitingTriage": "In Attesa di Triage",
+    "findingsInNewStatus": "risultati in stato Nuovo",
+    "unmappedApps": "App Non Mappate",
+    "unverifiedApplications": "applicazioni non verificate",
+    "slaStatus": "Stato SLA",
+    "openFindings": "Risultati Aperti",
+    "recentImports": "Importazioni Recenti",
+    "noRecentImports": "Nessuna importazione recente",
+    "noFile": "Nessun file",
+    "records": "record",
+    "new": "nuovi",
+    "riskiestApplications": "Applicazioni Più Rischiose",
+    "noApplicationData": "Nessun dato applicazione",
+    "total": "totale",
+    "loadError": "Impossibile caricare i dati della dashboard.",
+    "ingestionStatus": {
+      "Completed": "Completato",
+      "Failed": "Fallito",
+      "Processing": "In Elaborazione",
+      "Pending": "In Attesa"
+    }
   },
   "dedup": {
     "title": "Dashboard Deduplicazione",
@@ -82,6 +155,21 @@
       "next": "Successivo"
     }
   },
+  "triage": {
+    "confirm": "Conferma risultato",
+    "requestFalsePositive": "Richiedi falso positivo"
+  },
+  "ingestion": {
+    "clearFile": "Rimuovi file selezionato",
+    "title": "Importa Risultati",
+    "dragDropText": "Trascina e rilascia un file qui, o",
+    "browse": "sfoglia",
+    "supportedFormats": "Supporta JSON, CSV, XML, SARIF",
+    "parserType": "Tipo di Parser",
+    "format": "Formato",
+    "upload": "Carica",
+    "uploading": "Caricamento..."
+  },
   "findings": {
     "tabs": {
       "all": "Tutti",
@@ -107,11 +195,30 @@
       "fixedVersion": "Versione Corretta",
       "dependencyType": "Tipo Dipendenza",
       "knownExploited": "Exploit Noto",
+      "branch": "Branch",
+      "packageType": "Tipo Pacchetto",
       "targetUrl": "URL Obiettivo",
       "parameter": "Parametro",
-      "webAppName": "Applicazione Web"
+      "webAppName": "Nome DNS",
+      "httpMethod": "Metodo HTTP"
+    },
+    "status": {
+      "New": "Nuovo",
+      "Confirmed": "Confermato",
+      "In_Remediation": "In Rimediazione",
+      "Mitigated": "Mitigato",
+      "Verified": "Verificato",
+      "Closed": "Chiuso",
+      "False_Positive_Requested": "FP Richiesto",
+      "False_Positive": "Falso Positivo",
+      "Risk_Accepted": "Rischio Accettato",
+      "Deferred_Remediation": "Differito",
+      "Invalidated": "Invalidato"
     },
     "noFindings": "Nessun risultato trovato",
+    "export": "Esporta",
+    "exportCsv": "Esporta CSV",
+    "exportJson": "Esporta JSON",
     "yes": "S\u00ec",
     "no": "No"
   },
@@ -122,6 +229,26 @@
     "pageOf": "Pagina {{page}} di {{totalPages}}",
     "previous": "Precedente",
     "next": "Successivo",
+    "viewCards": "Schede",
+    "viewGraph": "Grafo",
+    "graphControls": {
+      "riskThreshold": "Punteggio di Rischio Minimo",
+      "categories": "Categorie",
+      "layout": "Layout",
+      "hierarchical": "Da Sinistra a Destra",
+      "forceDirected": "Dall'Alto in Basso"
+    },
+    "edgeTooltip": {
+      "confidence": "Confidenza"
+    },
+    "findingPanel": {
+      "title": "Dettagli Risultato",
+      "severity": "Gravit\u00e0",
+      "category": "Categoria",
+      "source": "Sorgente",
+      "status": "Stato",
+      "viewFinding": "Visualizza Risultato"
+    },
     "columns": {
       "application": "Applicazione",
       "riskScore": "Punteggio di Rischio",
@@ -144,7 +271,8 @@
       "columnSource": "Sorgente",
       "columnStatus": "Stato",
       "noData": "Nessuna catena di attacco o risultato trovato per questa applicazione"
-    }
+    },
+    "graphAriaLabel": "Grafo di visualizzazione catena di attacco"
   },
   "correlation": {
     "title": "Motore di Correlazione",
@@ -177,5 +305,44 @@
       "previous": "Precedente",
       "next": "Successivo"
     }
+  },
+  "findingDetail": {
+    "notFound": "Risultato non trovato",
+    "risk": "Rischio",
+    "details": "Dettagli",
+    "originalSeverity": "Severità Originale",
+    "sourceFindingId": "ID Risultato Sorgente",
+    "fingerprint": "Fingerprint",
+    "firstSeen": "Prima Rilevazione",
+    "lastSeen": "Ultima Rilevazione",
+    "owner": "Responsabile",
+    "cwe": "CWE",
+    "cve": "CVE",
+    "owasp": "OWASP",
+    "sastDetails": "Dettagli SAST",
+    "file": "File",
+    "lines": "Righe",
+    "rule": "Regola",
+    "project": "Progetto",
+    "branch": "Branch",
+    "language": "Linguaggio",
+    "codeSnippet": "Frammento di Codice",
+    "scaDetails": "Dettagli SCA",
+    "package": "Pacchetto",
+    "fixedVersion": "Versione Corretta",
+    "dependency": "Dipendenza",
+    "epss": "EPSS",
+    "knownExploited": "Exploit Noto",
+    "dastDetails": "Dettagli DAST",
+    "url": "URL",
+    "method": "Metodo",
+    "parameter": "Parametro",
+    "comments": "Commenti",
+    "history": "Storico",
+    "rawFinding": "Dato Grezzo",
+    "addComment": "Aggiungi un commento...",
+    "send": "Invia",
+    "noHistory": "Nessuna voce nello storico",
+    "transitions": "Transizione a"
   }
 }

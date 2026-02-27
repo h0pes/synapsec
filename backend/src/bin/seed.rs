@@ -29,6 +29,7 @@ async fn main() -> anyhow::Result<()> {
     seed_sample_findings(&pool).await?;
     seed_sca_findings(&pool).await?;
     seed_dast_findings(&pool).await?;
+    seed_correlation_findings(&pool).await?;
 
     println!("\n=== Seed complete! ===");
     println!("Admin login: admin / {ADMIN_PASSWORD}");
@@ -266,5 +267,141 @@ async fn seed_dast_findings(pool: &PgPool) -> anyhow::Result<()> {
         result.total_parsed, result.new_findings, result.updated_findings
     );
 
+    Ok(())
+}
+
+/// Ingest correlation-ready fixtures (SAST, SCA, DAST) for PAYM1 and run correlation.
+///
+/// These fixtures share CVE/CWE identifiers across scanner types so the
+/// correlation engine can build cross-tool relationships for the attack
+/// chain graph visualization.
+async fn seed_correlation_findings(pool: &PgPool) -> anyhow::Result<()> {
+    // Idempotency: skip if already ingested
+    let already_seeded: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM ingestion_logs WHERE file_name = $1)",
+    )
+    .bind("correlation_sast_seed.csv")
+    .fetch_one(pool)
+    .await?;
+
+    if already_seeded {
+        println!("[skip] Correlation fixtures already seeded");
+        return Ok(());
+    }
+
+    // Ensure lowercase app_code_patterns exist for Tenable WAS metadata keys.
+    // The parser stores metadata with lowercase keys (dns_name, url) but the
+    // default patterns use display-style names (DNS Name, URL). Insert
+    // lowercase variants so the resolver can match DAST findings.
+    seed_lowercase_dast_patterns(pool).await?;
+
+    // Admin must exist — seeded by seed_admin_user() which runs first.
+    let admin_id: uuid::Uuid = sqlx::query_scalar("SELECT id FROM users WHERE username = 'admin'")
+        .fetch_optional(pool)
+        .await?
+        .unwrap_or_default();
+
+    let fixtures_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+
+    // --- SAST correlation fixture (SonarQube CSV) ---
+    let sast_path = fixtures_dir.join("correlation_sast_seed.csv");
+    let sast_data = std::fs::read(&sast_path)?;
+    let sast_result = synapsec::services::ingestion::ingest_file(
+        pool,
+        &sast_data,
+        "correlation_sast_seed.csv",
+        &synapsec::services::ingestion::ParserType::Sonarqube,
+        &synapsec::parsers::InputFormat::Csv,
+        admin_id,
+    )
+    .await?;
+    println!(
+        "[done] Correlation SAST: {} parsed, {} new, {} errors",
+        sast_result.total_parsed, sast_result.new_findings, sast_result.error_count
+    );
+
+    // --- SCA correlation fixture (JFrog Xray JSON) ---
+    let sca_path = fixtures_dir.join("correlation_sca_seed.json");
+    let sca_data = std::fs::read(&sca_path)?;
+    let sca_result = synapsec::services::ingestion::ingest_file(
+        pool,
+        &sca_data,
+        "correlation_sca_seed.json",
+        &synapsec::services::ingestion::ParserType::JfrogXray,
+        &synapsec::parsers::InputFormat::Json,
+        admin_id,
+    )
+    .await?;
+    println!(
+        "[done] Correlation SCA: {} parsed, {} new, {} errors",
+        sca_result.total_parsed, sca_result.new_findings, sca_result.error_count
+    );
+
+    // --- DAST correlation fixture (Tenable WAS CSV) ---
+    let dast_path = fixtures_dir.join("correlation_dast_seed.csv");
+    let dast_data = std::fs::read(&dast_path)?;
+    let dast_result = synapsec::services::ingestion::ingest_file(
+        pool,
+        &dast_data,
+        "correlation_dast_seed.csv",
+        &synapsec::services::ingestion::ParserType::TenableWas,
+        &synapsec::parsers::InputFormat::Csv,
+        admin_id,
+    )
+    .await?;
+    println!(
+        "[done] Correlation DAST: {} parsed, {} new, {} errors",
+        dast_result.total_parsed, dast_result.new_findings, dast_result.error_count
+    );
+
+    // --- Run correlation engine for PAYM1 ---
+    let paym1_id: Option<uuid::Uuid> =
+        sqlx::query_scalar("SELECT id FROM applications WHERE app_code = 'PAYM1'")
+            .fetch_optional(pool)
+            .await?;
+
+    if let Some(app_id) = paym1_id {
+        let corr_result =
+            synapsec::services::correlation_service::run_for_application(pool, app_id, admin_id)
+                .await?;
+        println!(
+            "[done] Correlation engine: {} findings analyzed, {} new relationships",
+            corr_result.total_findings_analyzed, corr_result.new_relationships
+        );
+    } else {
+        println!("[warn] PAYM1 application not found — skipping correlation");
+    }
+
+    Ok(())
+}
+
+/// Insert lowercase app_code_patterns for Tenable WAS metadata keys.
+///
+/// The Tenable WAS parser stores metadata with lowercase underscore keys
+/// (`dns_name`, `url`) but the default seed patterns from the migration
+/// use display-style field names (`DNS Name`, `URL`). This adds matching
+/// lowercase patterns so the app code resolver works for DAST findings.
+async fn seed_lowercase_dast_patterns(pool: &PgPool) -> anyhow::Result<()> {
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM app_code_patterns WHERE source_tool = 'Tenable WAS' AND field_name = 'dns_name')",
+    )
+    .fetch_one(pool)
+    .await?;
+
+    if exists {
+        return Ok(());
+    }
+
+    sqlx::query(
+        r#"INSERT INTO app_code_patterns (source_tool, field_name, regex_pattern, priority, description) VALUES
+           ('Tenable WAS', 'dns_name', '^[st](?P<app_code>[^.]+)\.', 10, 'Strip s/t env prefix from metadata dns_name'),
+           ('Tenable WAS', 'dns_name', '^(?P<app_code>[^.]+)\.', 5, 'Full first subdomain from metadata dns_name (fallback)'),
+           ('Tenable WAS', 'url', 'https?://[st](?P<app_code>[^.]+)\.', 10, 'Strip s/t env prefix from metadata url'),
+           ('Tenable WAS', 'url', 'https?://(?P<app_code>[^.]+)\.', 5, 'Full subdomain from metadata url (fallback)')"#,
+    )
+    .execute(pool)
+    .await?;
+
+    println!("[done] Added lowercase app_code_patterns for Tenable WAS");
     Ok(())
 }

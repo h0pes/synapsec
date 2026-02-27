@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from '@tanstack/react-router'
 import { CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -12,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SeverityBadge } from '@/components/findings/SeverityBadge'
+import { PageHeader } from '@/components/ui/page-header'
 import * as findingsApi from '@/api/findings'
 import type { FindingSummary } from '@/types/finding'
 
@@ -69,25 +71,27 @@ export function TriageQueuePage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.triage')}</h1>
+    <div className="animate-in space-y-4">
+      <PageHeader title={t('nav.triage')}>
         <span className="text-sm text-muted-foreground">
-          {total} {total === 1 ? 'finding' : 'findings'} awaiting triage
+          {total} {total === 1 ? t('common.finding') : t('common.findings')} {t('common.awaitingTriage')}
         </span>
-      </div>
+      </PageHeader>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common.loading')}
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-1" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+          ))}
         </div>
       ) : findings.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          No findings awaiting triage
+          {t('common.noFindingsAwaitingTriage')}
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -102,12 +106,20 @@ export function TriageQueuePage() {
               </TableHeader>
               <TableBody>
                 {findings.map((f) => (
-                  <TableRow key={f.id}>
+                  <TableRow key={f.id} className="transition-colors hover:bg-muted/50">
                     <TableCell
-                      className="max-w-[300px] cursor-pointer truncate font-medium hover:underline"
+                      className="max-w-[300px] cursor-pointer truncate font-medium hover:text-primary hover:underline"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/findings/$id', params: { id: f.id } })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          navigate({ to: '/findings/$id', params: { id: f.id } })
+                        }
+                      }}
                     >
                       {f.title}
                     </TableCell>
@@ -129,7 +141,7 @@ export function TriageQueuePage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Confirm"
+                          aria-label={t('triage.confirm')}
                           onClick={() => handleConfirm(f.id)}
                         >
                           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -137,7 +149,7 @@ export function TriageQueuePage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Request False Positive"
+                          aria-label={t('triage.requestFalsePositive')}
                           onClick={() => handleFalsePositive(f.id)}
                         >
                           <XCircle className="h-4 w-4 text-orange-600" />
@@ -151,29 +163,7 @@ export function TriageQueuePage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+            <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}

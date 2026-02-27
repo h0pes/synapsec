@@ -9,9 +9,11 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -156,19 +158,30 @@ export function DeduplicationPage() {
 
   if (statsLoading && pendingLoading && historyLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="animate-in space-y-6">
+        <div className="skeleton h-8 w-48" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className={`skeleton h-[100px] rounded-xl stagger-${i + 1}`} />
+          ))}
+        </div>
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-6" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${Math.min(i + 7, 8)}`} />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('dedup.title')}</h1>
+    <div className="animate-in space-y-6">
+      <PageHeader title={t('dedup.title')} />
 
       {/* Section 1 — Statistics cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
+        <Card className="animate-in stagger-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.totalDuplicates')}
@@ -182,7 +195,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.pendingReview')}
@@ -196,7 +209,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.confirmed')}
@@ -210,7 +223,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-4">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.rejected')}
@@ -224,7 +237,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.totalIngestions')}
@@ -248,7 +261,7 @@ export function DeduplicationPage() {
       <Separator />
 
       {/* Section 2 — Pending Review table */}
-      <div className="space-y-4">
+      <div className="animate-in stagger-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('dedup.pending.title')}</h2>
           <span className="text-sm text-muted-foreground">
@@ -257,8 +270,11 @@ export function DeduplicationPage() {
         </div>
 
         {pendingLoading ? (
-          <div className="flex h-32 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            <div className="skeleton h-10 rounded-lg stagger-1" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+            ))}
           </div>
         ) : pending.length === 0 ? (
           <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -266,7 +282,7 @@ export function DeduplicationPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-[var(--shadow-card)]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -279,7 +295,7 @@ export function DeduplicationPage() {
                 </TableHeader>
                 <TableBody>
                   {pending.map((item) => (
-                    <TableRow key={item.relationship_id}>
+                    <TableRow key={item.relationship_id} className="transition-colors hover:bg-muted/50">
                       <TableCell>
                         <div>
                           <p className="max-w-[240px] truncate font-medium">{item.source_title}</p>
@@ -305,7 +321,7 @@ export function DeduplicationPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title={t('dedup.actions.confirm')}
+                            aria-label={t('dedup.actions.confirm')}
                             disabled={actionInFlight === item.relationship_id}
                             onClick={() => handleConfirm(item.relationship_id)}
                           >
@@ -318,7 +334,7 @@ export function DeduplicationPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title={t('dedup.actions.reject')}
+                            aria-label={t('dedup.actions.reject')}
                             disabled={actionInFlight === item.relationship_id}
                             onClick={() => handleReject(item.relationship_id)}
                           >
@@ -337,29 +353,7 @@ export function DeduplicationPage() {
             </div>
 
             {pendingTotalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('dedup.pagination.page')} {pendingPage} {t('dedup.pagination.of')} {pendingTotalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pendingPage <= 1}
-                    onClick={() => setPendingPage((p) => p - 1)}
-                  >
-                    {t('dedup.pagination.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pendingPage >= pendingTotalPages}
-                    onClick={() => setPendingPage((p) => p + 1)}
-                  >
-                    {t('dedup.pagination.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={pendingPage} totalPages={pendingTotalPages} onPageChange={setPendingPage} />
             )}
           </>
         )}
@@ -368,7 +362,7 @@ export function DeduplicationPage() {
       <Separator />
 
       {/* Section 3 — Decision History table */}
-      <div className="space-y-4">
+      <div className="animate-in stagger-7 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('dedup.history.title')}</h2>
           <span className="text-sm text-muted-foreground">
@@ -377,8 +371,11 @@ export function DeduplicationPage() {
         </div>
 
         {historyLoading ? (
-          <div className="flex h-32 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            <div className="skeleton h-10 rounded-lg stagger-1" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+            ))}
           </div>
         ) : history.length === 0 ? (
           <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -386,7 +383,7 @@ export function DeduplicationPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-[var(--shadow-card)]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -400,7 +397,7 @@ export function DeduplicationPage() {
                 </TableHeader>
                 <TableBody>
                   {history.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="transition-colors hover:bg-muted/50">
                       <TableCell>
                         <Badge variant="outline" className={actionBadgeClass(item.action)}>
                           {item.action}
@@ -428,29 +425,7 @@ export function DeduplicationPage() {
             </div>
 
             {historyTotalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('dedup.pagination.page')} {historyPage} {t('dedup.pagination.of')} {historyTotalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={historyPage <= 1}
-                    onClick={() => setHistoryPage((p) => p - 1)}
-                  >
-                    {t('dedup.pagination.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={historyPage >= historyTotalPages}
-                    onClick={() => setHistoryPage((p) => p + 1)}
-                  >
-                    {t('dedup.pagination.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={historyPage} totalPages={historyTotalPages} onPageChange={setHistoryPage} />
             )}
           </>
         )}

@@ -1,0 +1,161 @@
+{
+  "total_rows": 4,
+  "rows": [
+    {
+      "cves": [
+        {
+          "cve": "CVE-2024-38816",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 7.5,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 7.5,
+      "summary": "Spring Framework path traversal vulnerability in functional web frameworks via crafted HTTP requests.",
+      "severity": "High",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://org.springframework:spring-webmvc:6.1.6",
+      "component_physical_path": "paym1-web.war/WEB-INF/lib/spring-webmvc-6.1.6.jar",
+      "impacted_artifact": "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+      "impact_path": [
+        "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+        "gav://com.ourcompany.PAYM1:paym1-web:2.5.0",
+        "gav://org.springframework:spring-webmvc:6.1.6"
+      ],
+      "path": "prod-release-local/PAYM1/paym1-app/v2.5.0/paym1-ear.ear",
+      "fixed_versions": ["6.1.12"],
+      "published": "2024-09-13T06:15:00+02:00",
+      "artifact_scan_time": "2026-02-15T10:00:00+01:00",
+      "issue_id": "XRAY-COR-001",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Applications serving static resources through the functional web frameworks WebMvc.fn or WebFlux.fn are vulnerable to path traversal attacks. An attacker can craft malicious HTTP requests and obtain any file on the file system that is also accessible to the process in which the Spring application is running.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-38816",
+        "https://spring.io/security/cve-2024-38816"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2024-38816",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 7.5,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 7.5,
+      "summary": "Spring Framework path traversal vulnerability in functional web frameworks via crafted HTTP requests.",
+      "severity": "High",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://org.springframework:spring-webflux:6.1.6",
+      "component_physical_path": "paym1-api.war/WEB-INF/lib/spring-webflux-6.1.6.jar",
+      "impacted_artifact": "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+      "impact_path": [
+        "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+        "gav://com.ourcompany.PAYM1:paym1-api:2.5.0",
+        "gav://org.springframework:spring-webflux:6.1.6"
+      ],
+      "path": "prod-release-local/PAYM1/paym1-app/v2.5.0/paym1-ear.ear",
+      "fixed_versions": ["6.1.12"],
+      "published": "2024-09-13T06:15:00+02:00",
+      "artifact_scan_time": "2026-02-15T10:00:00+01:00",
+      "issue_id": "XRAY-COR-002",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Applications serving static resources through the functional web frameworks WebMvc.fn or WebFlux.fn are vulnerable to path traversal attacks. An attacker can craft malicious HTTP requests and obtain any file on the file system that is also accessible to the process in which the Spring application is running.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-38816",
+        "https://spring.io/security/cve-2024-38816"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2024-22262",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 8.1,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 8.1,
+      "summary": "Spring Framework URL parsing vulnerability allowing open redirect and SSRF attacks.",
+      "severity": "High",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://org.springframework:spring-web:6.1.6",
+      "component_physical_path": "paym1-web.war/WEB-INF/lib/spring-web-6.1.6.jar",
+      "impacted_artifact": "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+      "impact_path": [
+        "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+        "gav://com.ourcompany.PAYM1:paym1-web:2.5.0",
+        "gav://org.springframework:spring-web:6.1.6"
+      ],
+      "path": "prod-release-local/PAYM1/paym1-app/v2.5.0/paym1-ear.ear",
+      "fixed_versions": ["6.1.7"],
+      "published": "2024-04-16T10:15:00+02:00",
+      "artifact_scan_time": "2026-02-15T10:00:00+01:00",
+      "issue_id": "XRAY-COR-003",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "Applications that use UriComponentsBuilder in Spring Framework to parse an externally provided URL and perform validation checks on the host of the parsed URL may be vulnerable to open redirect and SSRF attacks.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-22262",
+        "https://spring.io/security/cve-2024-22262"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    },
+    {
+      "cves": [
+        {
+          "cve": "CVE-2023-44487",
+          "cvss_v2_score": null,
+          "cvss_v2_vector": null,
+          "cvss_v3_score": 7.5,
+          "cvss_v3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "cvss2_max_score": 0.0,
+      "cvss3_max_score": 7.5,
+      "summary": "HTTP/2 Rapid Reset attack allows denial of service against HTTP/2 servers.",
+      "severity": "High",
+      "severity_source": "CVSS V3 from NVD",
+      "vulnerable_component": "gav://io.netty:netty-codec-http2:4.1.96.Final",
+      "component_physical_path": "paym1-api.war/WEB-INF/lib/netty-codec-http2-4.1.96.Final.jar",
+      "impacted_artifact": "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+      "impact_path": [
+        "gav://com.ourcompany.PAYM1:paym1-ear:2.5.0",
+        "gav://com.ourcompany.PAYM1:paym1-api:2.5.0",
+        "gav://io.netty:netty-codec-http2:4.1.96.Final"
+      ],
+      "path": "prod-release-local/PAYM1/paym1-app/v2.5.0/paym1-ear.ear",
+      "fixed_versions": ["4.1.100.Final"],
+      "published": "2023-10-10T14:15:00+02:00",
+      "artifact_scan_time": "2026-02-15T10:00:00+01:00",
+      "issue_id": "XRAY-COR-004",
+      "package_type": "maven",
+      "provider": "JFrog",
+      "description": "The HTTP/2 protocol allows a denial of service (server resource consumption) because request cancellation can reset many streams quickly, as exploited in the wild in August through October 2023. Also known as Rapid Reset Attack.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-44487",
+        "https://github.com/netty/netty/issues/13839"
+      ],
+      "project_keys": [],
+      "applicability": null,
+      "applicability_result": ""
+    }
+  ]
+}

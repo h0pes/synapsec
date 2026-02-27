@@ -147,12 +147,14 @@ export type FindingCategoryData = {
   // SCA fields
   package_name?: string
   package_version?: string
+  package_type?: string
   fixed_version?: string
   dependency_type?: string
   known_exploited?: boolean
   // DAST fields
   target_url?: string
   parameter?: string
+  http_method?: string
   web_application_name?: string
   plugin_id?: string
 }

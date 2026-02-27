@@ -12,13 +12,25 @@
     "unmapped": "Unmapped Apps",
     "deduplication": "Deduplication",
     "correlation": "Correlation",
-    "attack_chains": "Attack Chains"
+    "attack_chains": "Attack Chains",
+    "sidebar": "Application sidebar",
+    "mainNavigation": "Main navigation",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "pipeline": "Pipeline"
   },
   "auth": {
     "login": "Sign In",
     "logout": "Sign Out",
     "username": "Username",
-    "password": "Password"
+    "password": "Password",
+    "signIn": "Sign in",
+    "signInSubtitle": "Enter your credentials to access the platform",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "unexpectedError": "An unexpected error occurred",
+    "usernamePlaceholder": "Enter your username",
+    "secureLogin": "Protected by enterprise-grade security"
   },
   "common": {
     "save": "Save",
@@ -33,8 +45,69 @@
     "of": "of",
     "previous": "Previous",
     "next": "Next",
+    "pagination": "Pagination",
     "finding": "finding",
-    "findings": "findings"
+    "findings": "findings",
+    "application": "application",
+    "applications": "applications",
+    "awaitingTriage": "awaiting triage",
+    "noFindingsAwaitingTriage": "No findings awaiting triage",
+    "noApplicationsFound": "No applications found",
+    "unverified": "unverified",
+    "noUnmappedApps": "No unmapped applications",
+    "unmappedDescription": "These applications were auto-created from scanner project names during ingestion. Review and verify them, or merge with existing applications.",
+    "back": "Back",
+    "all": "All",
+    "from": "From",
+    "to": "To",
+    "yes": "Yes",
+    "no": "No",
+    "skipToContent": "Skip to main content",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "switchLanguage": "Switch language to {{language}}"
+  },
+  "dashboard": {
+    "charts": {
+      "severityDistribution": "Severity Distribution",
+      "findingsBySource": "Findings by Source",
+      "riskiestApps": "Riskiest Applications",
+      "slaCompliance": "SLA Compliance"
+    },
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "info": "Info"
+    },
+    "sla": {
+      "onTrack": "On Track",
+      "atRisk": "At Risk",
+      "breached": "Breached"
+    },
+    "other": "Other",
+    "awaitingTriage": "Awaiting Triage",
+    "findingsInNewStatus": "findings in New status",
+    "unmappedApps": "Unmapped Apps",
+    "unverifiedApplications": "unverified applications",
+    "slaStatus": "SLA Status",
+    "openFindings": "Open Findings",
+    "recentImports": "Recent Imports",
+    "noRecentImports": "No recent imports",
+    "noFile": "No file",
+    "records": "records",
+    "new": "new",
+    "riskiestApplications": "Riskiest Applications",
+    "noApplicationData": "No application data",
+    "total": "total",
+    "loadError": "Unable to load dashboard data.",
+    "ingestionStatus": {
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Processing": "Processing",
+      "Pending": "Pending"
+    }
   },
   "dedup": {
     "title": "Deduplication Dashboard",
@@ -82,6 +155,21 @@
       "next": "Next"
     }
   },
+  "triage": {
+    "confirm": "Confirm finding",
+    "requestFalsePositive": "Request false positive"
+  },
+  "ingestion": {
+    "clearFile": "Clear selected file",
+    "title": "Import Findings",
+    "dragDropText": "Drag and drop a file here, or",
+    "browse": "browse",
+    "supportedFormats": "Supports JSON, CSV, XML, SARIF",
+    "parserType": "Parser Type",
+    "format": "Format",
+    "upload": "Upload",
+    "uploading": "Uploading..."
+  },
   "findings": {
     "tabs": {
       "all": "All",
@@ -107,11 +195,30 @@
       "fixedVersion": "Fixed Version",
       "dependencyType": "Dependency Type",
       "knownExploited": "Known Exploited",
+      "branch": "Branch",
+      "packageType": "Package Type",
       "targetUrl": "Target URL",
       "parameter": "Parameter",
-      "webAppName": "Web Application"
+      "webAppName": "DNS Name",
+      "httpMethod": "HTTP Method"
+    },
+    "status": {
+      "New": "New",
+      "Confirmed": "Confirmed",
+      "In_Remediation": "In Remediation",
+      "Mitigated": "Mitigated",
+      "Verified": "Verified",
+      "Closed": "Closed",
+      "False_Positive_Requested": "FP Requested",
+      "False_Positive": "False Positive",
+      "Risk_Accepted": "Risk Accepted",
+      "Deferred_Remediation": "Deferred",
+      "Invalidated": "Invalidated"
     },
     "noFindings": "No findings found",
+    "export": "Export",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON",
     "yes": "Yes",
     "no": "No"
   },
@@ -122,6 +229,26 @@
     "pageOf": "Page {{page}} of {{totalPages}}",
     "previous": "Previous",
     "next": "Next",
+    "viewCards": "Cards",
+    "viewGraph": "Graph",
+    "graphControls": {
+      "riskThreshold": "Min Risk Score",
+      "categories": "Categories",
+      "layout": "Layout",
+      "hierarchical": "Left to Right",
+      "forceDirected": "Top Down"
+    },
+    "edgeTooltip": {
+      "confidence": "Confidence"
+    },
+    "findingPanel": {
+      "title": "Finding Details",
+      "severity": "Severity",
+      "category": "Category",
+      "source": "Source",
+      "status": "Status",
+      "viewFinding": "View Finding"
+    },
     "columns": {
       "application": "Application",
       "riskScore": "Risk Score",
@@ -144,7 +271,8 @@
       "columnSource": "Source",
       "columnStatus": "Status",
       "noData": "No attack chains or findings found for this application"
-    }
+    },
+    "graphAriaLabel": "Attack chain visualization graph"
   },
   "correlation": {
     "title": "Correlation Engine",
@@ -177,5 +305,44 @@
       "previous": "Previous",
       "next": "Next"
     }
+  },
+  "findingDetail": {
+    "notFound": "Finding not found",
+    "risk": "Risk",
+    "details": "Details",
+    "originalSeverity": "Original Severity",
+    "sourceFindingId": "Source Finding ID",
+    "fingerprint": "Fingerprint",
+    "firstSeen": "First Seen",
+    "lastSeen": "Last Seen",
+    "owner": "Owner",
+    "cwe": "CWE",
+    "cve": "CVE",
+    "owasp": "OWASP",
+    "sastDetails": "SAST Details",
+    "file": "File",
+    "lines": "Lines",
+    "rule": "Rule",
+    "project": "Project",
+    "branch": "Branch",
+    "language": "Language",
+    "codeSnippet": "Code Snippet",
+    "scaDetails": "SCA Details",
+    "package": "Package",
+    "fixedVersion": "Fixed Version",
+    "dependency": "Dependency",
+    "epss": "EPSS",
+    "knownExploited": "Known Exploited",
+    "dastDetails": "DAST Details",
+    "url": "URL",
+    "method": "Method",
+    "parameter": "Parameter",
+    "comments": "Comments",
+    "history": "History",
+    "rawFinding": "Raw Finding",
+    "addComment": "Add a comment...",
+    "send": "Send",
+    "noHistory": "No history entries",
+    "transitions": "Transition to"
   }
 }

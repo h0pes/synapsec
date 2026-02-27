@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, Shield, Building2, User, Code2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ const STATUS_COLORS: Record<AppStatus, string> = {
 }
 
 export function ApplicationDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams({ strict: false })
   const navigate = useNavigate()
   const [app, setApp] = useState<Application | null>(null)
@@ -47,7 +49,20 @@ export function ApplicationDetailPage() {
   }, [fetchApp])
 
   if (loading) {
-    return <div className="flex h-64 items-center justify-center text-muted-foreground">Loading...</div>
+    return (
+      <div className="animate-in space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="skeleton h-10 w-10 rounded-md" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-8 w-64 rounded-md stagger-1" />
+            <div className="skeleton h-5 w-48 rounded-md stagger-2" />
+          </div>
+        </div>
+        <div className="skeleton h-[200px] rounded-xl stagger-3" />
+        <div className="skeleton h-[200px] rounded-xl stagger-4" />
+        <div className="skeleton h-[160px] rounded-xl stagger-5" />
+      </div>
+    )
   }
 
   if (!app) {
@@ -55,10 +70,10 @@ export function ApplicationDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-in space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/applications' })}>
+        <Button variant="ghost" size="icon" aria-label={t('common.back')} onClick={() => navigate({ to: '/applications' })}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
@@ -91,7 +106,7 @@ export function ApplicationDetailPage() {
 
       {/* Description */}
       {app.description && (
-        <Card>
+        <Card className="animate-in stagger-1">
           <CardContent className="pt-6">
             <p>{app.description}</p>
           </CardContent>
@@ -99,7 +114,7 @@ export function ApplicationDetailPage() {
       )}
 
       {/* Ownership */}
-      <Card>
+      <Card className="animate-in stagger-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-4 w-4" /> Ownership
@@ -126,7 +141,7 @@ export function ApplicationDetailPage() {
       </Card>
 
       {/* Technical Details */}
-      <Card>
+      <Card className="animate-in stagger-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Code2 className="h-4 w-4" /> Technical Details
@@ -167,7 +182,7 @@ export function ApplicationDetailPage() {
       </Card>
 
       {/* Organizational */}
-      <Card>
+      <Card className="animate-in stagger-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-4 w-4" /> Organizational
@@ -194,7 +209,7 @@ export function ApplicationDetailPage() {
       </Card>
 
       {/* Compliance */}
-      <Card>
+      <Card className="animate-in stagger-5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-4 w-4" /> Compliance

@@ -12,6 +12,7 @@ import {
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { PageHeader } from '@/components/ui/page-header'
 import * as applicationsApi from '@/api/applications'
 import type { ApplicationSummary, AssetCriticality, AppStatus } from '@/types/application'
 
@@ -43,7 +45,7 @@ const columns: ColumnDef<ApplicationSummary>[] = [
     accessorKey: 'app_code',
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting()}>
-        Code <ArrowUpDown className="ml-1 h-3 w-3" />
+        Code <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
@@ -54,7 +56,7 @@ const columns: ColumnDef<ApplicationSummary>[] = [
     accessorKey: 'app_name',
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting()}>
-        Name <ArrowUpDown className="ml-1 h-3 w-3" />
+        Name <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
       </Button>
     ),
   },
@@ -147,21 +149,23 @@ export function ApplicationsPage() {
   })
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.applications')}</h1>
-        <span className="text-sm text-muted-foreground">
-          {total} {total === 1 ? 'application' : 'applications'}
+    <div className="animate-in space-y-4">
+      <PageHeader title={t('nav.applications')}>
+        <span className="animate-in text-sm text-muted-foreground">
+          {total} {total === 1 ? t('common.application') : t('common.applications')}
         </span>
-      </div>
+      </PageHeader>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common.loading')}
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-1" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+          ))}
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((hg) => (
@@ -180,17 +184,25 @@ export function ApplicationsPage() {
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No applications found
+                      {t('common.noApplicationsFound')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
-                      className="cursor-pointer"
+                      className="cursor-pointer transition-colors hover:bg-muted/50"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/applications/$id', params: { id: row.original.id } })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          navigate({ to: '/applications/$id', params: { id: row.original.id } })
+                        }
+                      }}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
@@ -205,29 +217,7 @@ export function ApplicationsPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+            <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}

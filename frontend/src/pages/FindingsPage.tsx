@@ -1,22 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { SortingState } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { TablePagination } from '@/components/ui/table-pagination'
 import { FindingList } from '@/components/findings/FindingList'
-import { FindingFiltersPanel } from '@/components/findings/FindingFilters'
-import { SeverityBadge } from '@/components/findings/SeverityBadge'
-import { FindingStatusBadge } from '@/components/findings/FindingStatusBadge'
+import { FindingSearchBar } from '@/components/findings/FindingFilters'
+import { SastTable } from '@/components/findings/SastTable'
+import { ScaTable } from '@/components/findings/ScaTable'
+import { DastTable } from '@/components/findings/DastTable'
+import { ExportButton } from '@/components/findings/ExportButton'
+import { PageHeader } from '@/components/ui/page-header'
 import * as findingsApi from '@/api/findings'
 import type {
   FindingCategory,
@@ -53,27 +47,67 @@ export function FindingsPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState<FindingFilters>({})
+  const [search, setSearch] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
   const [loading, setLoading] = useState(false)
   const perPage = 25
+
+  // Per-tab inline column filter state
+  const [allColumnFilters, setAllColumnFilters] = useState<Record<string, string>>({})
+  const [sastCategoryFilters, setSastCategoryFilters] = useState<Record<string, string>>({})
+  const [scaCategoryFilters, setScaCategoryFilters] = useState<Record<string, string>>({})
+  const [dastCategoryFilters, setDastCategoryFilters] = useState<Record<string, string>>({})
+
+  const activeCategoryFilters = useMemo(
+    () =>
+      activeTab === 'sast'
+        ? sastCategoryFilters
+        : activeTab === 'sca'
+          ? scaCategoryFilters
+          : activeTab === 'dast'
+            ? dastCategoryFilters
+            : {},
+    [activeTab, sastCategoryFilters, scaCategoryFilters, dastCategoryFilters],
+  )
+
+  // Merged filter params for the export button
+  const exportFilters = useMemo<Record<string, string>>(() => {
+    const params: Record<string, string> = {}
+    const category = TAB_TO_CATEGORY[activeTab]
+    if (category) params.category = category
+    if (activeTab === 'all') {
+      if (search) params.search = search
+      Object.assign(params, allColumnFilters)
+    } else {
+      Object.assign(params, activeCategoryFilters)
+    }
+    return params
+  }, [activeTab, search, allColumnFilters, activeCategoryFilters])
 
   const fetchFindings = useCallback(async () => {
     setLoading(true)
     try {
       const category = TAB_TO_CATEGORY[activeTab]
       if (activeTab === 'all') {
+        // Merge search bar + inline column filters into FindingFilters
+        const filters: FindingFilters = {
+          ...(search ? { search } : {}),
+          ...(allColumnFilters.severity ? { severity: allColumnFilters.severity as FindingFilters['severity'] } : {}),
+          ...(allColumnFilters.status ? { status: allColumnFilters.status as FindingFilters['status'] } : {}),
+          ...(allColumnFilters.category ? { category: allColumnFilters.category as FindingFilters['category'] } : {}),
+        }
         const result = await findingsApi.listFindings(filters, page, perPage)
         setFindings(result.items)
         setCategoryFindings([])
         setTotal(result.total)
         setTotalPages(result.total_pages)
       } else {
-        const categoryFilters: FindingFilters = { ...filters, category }
+        const filters: FindingFilters = { category }
         const result = await findingsApi.listFindingsWithCategory(
-          categoryFilters,
+          filters,
           page,
           perPage,
+          activeCategoryFilters,
         )
         setCategoryFindings(result.items)
         setFindings([])
@@ -85,7 +119,7 @@ export function FindingsPage() {
     } finally {
       setLoading(false)
     }
-  }, [filters, page, activeTab])
+  }, [search, page, activeTab, allColumnFilters, activeCategoryFilters])
 
   useEffect(() => {
     fetchFindings()
@@ -101,8 +135,8 @@ export function FindingsPage() {
     })
   }
 
-  function handleFiltersChange(newFilters: FindingFilters) {
-    setFilters(newFilters)
+  function handleSearchChange(value: string) {
+    setSearch(value)
     setPage(1)
   }
 
@@ -110,328 +144,120 @@ export function FindingsPage() {
     void navigate({ to: '/findings/$id', params: { id } })
   }
 
+  const handleAllFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setAllColumnFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
+    setPage(1)
+  }, [])
+
+  const handleSastFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setSastCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
+    setPage(1)
+  }, [])
+
+  const handleScaFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setScaCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
+    setPage(1)
+  }, [])
+
+  const handleDastFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setDastCategoryFilters(prev =>
+      JSON.stringify(prev) === JSON.stringify(newFilters) ? prev : newFilters,
+    )
+    setPage(1)
+  }, [])
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.findings')}</h1>
+    <div className="animate-in space-y-4">
+      <PageHeader title={t('nav.findings')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? t('common.finding') : t('common.findings')}
         </span>
-      </div>
+        <ExportButton filters={exportFilters} />
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="all">{t('findings.tabs.all')}</TabsTrigger>
-          <TabsTrigger value="sast">{t('findings.tabs.sast')}</TabsTrigger>
-          <TabsTrigger value="sca">{t('findings.tabs.sca')}</TabsTrigger>
-          <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
-        </TabsList>
-
-        <FindingFiltersPanel filters={filters} onChange={handleFiltersChange} hideCategory={activeTab !== 'all'} />
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="all">{t('findings.tabs.all')}</TabsTrigger>
+            <TabsTrigger value="sast" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-sast" />
+              {t('findings.tabs.sast')}
+            </TabsTrigger>
+            <TabsTrigger value="sca" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-sca" />
+              {t('findings.tabs.sca')}
+            </TabsTrigger>
+            <TabsTrigger value="dast" className="gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-dast" />
+              {t('findings.tabs.dast')}
+            </TabsTrigger>
+          </TabsList>
+          {activeTab === 'all' && (
+            <FindingSearchBar search={search} onSearchChange={handleSearchChange} />
+          )}
+        </div>
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center text-muted-foreground">
-            {t('common.loading')}
+          <div className="space-y-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 1}`} />
+            ))}
           </div>
         ) : (
           <>
-            <TabsContent value="all">
+            <TabsContent value="all" className="animate-in">
               <FindingList
                 findings={findings}
+                onRowClick={handleRowClick}
+                onFiltersChange={handleAllFiltersChange}
                 sorting={sorting}
                 onSortingChange={setSorting}
               />
             </TabsContent>
 
-            <TabsContent value="sast">
+            <TabsContent value="sast" className="animate-in">
               <SastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleSastFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
-            <TabsContent value="sca">
+            <TabsContent value="sca" className="animate-in">
               <ScaTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleScaFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
-            <TabsContent value="dast">
+            <TabsContent value="dast" className="animate-in">
               <DastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
+                onFiltersChange={handleDastFiltersChange}
+                sorting={sorting}
+                onSortingChange={setSorting}
               />
             </TabsContent>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {t('common.page')} {page} {t('common.of')} {totalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
-                    {t('common.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    {t('common.next')}
-                  </Button>
-                </div>
-              </div>
+              <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
             )}
           </>
         )}
       </Tabs>
-    </div>
-  )
-}
-
-/* ---------- SAST category table ---------- */
-
-function SastTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 200 }}>{t('findings.columns.filePath')}</TableHead>
-            <TableHead style={{ width: 60 }}>{t('findings.columns.lineNumber')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.ruleId')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.project')}</TableHead>
-            <TableHead style={{ width: 90 }}>{t('findings.columns.language')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate font-mono text-xs" title={f.category_data?.file_path}>
-                  {f.category_data?.file_path ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.line_number ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  {f.category_data?.rule_id ?? '-'}
-                </TableCell>
-                <TableCell>{f.category_data?.project ?? '-'}</TableCell>
-                <TableCell>
-                  {f.category_data?.language ? (
-                    <Badge variant="outline">{f.category_data.language}</Badge>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-/* ---------- SCA category table ---------- */
-
-function ScaTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.packageName')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.packageVersion')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.fixedVersion')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.dependencyType')}</TableHead>
-            <TableHead style={{ width: 110 }}>{t('findings.columns.knownExploited')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.package_name ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.package_version ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.fixed_version ?? (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.dependency_type ? (
-                    <Badge variant="outline">{f.category_data.dependency_type}</Badge>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.known_exploited != null ? (
-                    f.category_data.known_exploited ? (
-                      <Badge className="bg-red-600 text-white">{t('findings.yes')}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">{t('findings.no')}</span>
-                    )
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-/* ---------- DAST category table ---------- */
-
-function DastTable({
-  findings,
-  onRowClick,
-}: {
-  findings: FindingSummaryWithCategory[]
-  onRowClick: (id: string) => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead style={{ width: 280 }}>{t('findings.columns.title')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.severity')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.status')}</TableHead>
-            <TableHead style={{ width: 120 }}>{t('findings.columns.source')}</TableHead>
-            <TableHead style={{ width: 100 }}>{t('findings.columns.firstSeen')}</TableHead>
-            <TableHead style={{ width: 250 }}>{t('findings.columns.targetUrl')}</TableHead>
-            <TableHead style={{ width: 140 }}>{t('findings.columns.parameter')}</TableHead>
-            <TableHead style={{ width: 180 }}>{t('findings.columns.webAppName')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {findings.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
-                {t('findings.noFindings')}
-              </TableCell>
-            </TableRow>
-          ) : (
-            findings.map((f) => (
-              <TableRow
-                key={f.id}
-                className="cursor-pointer"
-                onClick={() => onRowClick(f.id)}
-              >
-                <TableCell className="font-medium">{f.title}</TableCell>
-                <TableCell>
-                  <SeverityBadge severity={f.normalized_severity} />
-                </TableCell>
-                <TableCell>
-                  <FindingStatusBadge status={f.status} />
-                </TableCell>
-                <TableCell>{f.source_tool}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(f.first_seen).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="max-w-[250px] truncate font-mono text-xs" title={f.category_data?.target_url}>
-                  {f.category_data?.target_url ?? '-'}
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {f.category_data?.parameter ?? '-'}
-                </TableCell>
-                <TableCell>
-                  {f.category_data?.web_application_name ?? '-'}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
     </div>
   )
 }

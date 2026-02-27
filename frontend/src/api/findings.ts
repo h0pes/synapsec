@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiPatch } from './client'
+import { apiGet, apiGetBlob, apiPost, apiPut, apiPatch } from './client'
 import type {
   FindingSummary,
   FindingSummaryWithCategory,
@@ -35,6 +35,7 @@ export function listFindingsWithCategory(
   filters: FindingFilters = {},
   page = 1,
   perPage = 25,
+  categoryFilters: Record<string, string> = {},
 ): Promise<PagedResult<FindingSummaryWithCategory>> {
   const params: Record<string, string> = {
     page: String(page),
@@ -48,6 +49,11 @@ export function listFindingsWithCategory(
   if (filters.source_tool) params.source_tool = filters.source_tool
   if (filters.sla_status) params.sla_status = filters.sla_status
   if (filters.search) params.search = filters.search
+
+  // Merge category-specific filter params (e.g., branch, rule_id, package_name, target_url)
+  for (const [key, value] of Object.entries(categoryFilters)) {
+    if (value) params[key] = value
+  }
 
   return apiGet<PagedResult<FindingSummaryWithCategory>>('/findings', params)
 }
@@ -111,6 +117,14 @@ export function bulkAssign(
     finding_ids: findingIds,
     remediation_owner: remediationOwner,
   })
+}
+
+/** GET /findings/export — download findings as CSV or JSON blob. */
+export function exportFindings(
+  filters: Record<string, string>,
+  format: 'csv' | 'json',
+): Promise<Blob> {
+  return apiGetBlob('/findings/export', { ...filters, format })
 }
 
 /** POST /findings/bulk/tag — bulk tag. */

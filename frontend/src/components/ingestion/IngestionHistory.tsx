@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { TablePagination } from '@/components/ui/table-pagination'
 import {
   Table,
   TableBody,
@@ -64,8 +64,11 @@ export function IngestionHistory({ refreshTrigger }: Props) {
   return (
     <div className="space-y-4">
       {loading ? (
-        <div className="flex h-32 items-center justify-center text-muted-foreground">
-          Loading...
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-1" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+          ))}
         </div>
       ) : logs.length === 0 ? (
         <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -73,7 +76,7 @@ export function IngestionHistory({ refreshTrigger }: Props) {
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -92,8 +95,11 @@ export function IngestionHistory({ refreshTrigger }: Props) {
                 {logs.map((log) => (
                   <TableRow
                     key={log.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer transition-colors hover:bg-muted/50"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleRowClick(log.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(log.id) } }}
                   >
                     <TableCell className="font-medium">{log.source_tool}</TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
@@ -127,29 +133,7 @@ export function IngestionHistory({ refreshTrigger }: Props) {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+            <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}
