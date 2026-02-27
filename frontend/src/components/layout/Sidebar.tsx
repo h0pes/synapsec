@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 
 type NavItem = {
   labelKey: string
@@ -50,11 +49,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const router = useRouter()
   const currentPath = useRouterState({ select: (s) => s.location.pathname })
 
+  function isActive(item: NavItem) {
+    return item.path === '/'
+      ? currentPath === '/'
+      : currentPath.startsWith(item.path)
+  }
+
   function renderNavItem(item: NavItem) {
-    const active =
-      item.path === '/'
-        ? currentPath === '/'
-        : currentPath.startsWith(item.path)
+    const active = isActive(item)
     return (
       <a
         key={item.path}
@@ -64,16 +66,25 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           router.navigate({ to: item.path })
         }}
         className={cn(
-          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
           active
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
           collapsed && 'justify-center px-2',
         )}
         title={collapsed ? t(item.labelKey) : undefined}
       >
-        <item.icon className="h-4 w-4 shrink-0" />
-        {!collapsed && <span>{t(item.labelKey)}</span>}
+        {/* Active accent bar */}
+        {active && (
+          <span className="absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-primary" />
+        )}
+        <item.icon className={cn(
+          'h-[18px] w-[18px] shrink-0 transition-colors',
+          active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+        )} />
+        {!collapsed && (
+          <span className="truncate">{t(item.labelKey)}</span>
+        )}
       </a>
     )
   }
@@ -81,50 +92,62 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'flex h-screen flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-200',
-        collapsed ? 'w-16' : 'w-60',
+        'flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 ease-in-out',
+        collapsed ? 'w-[60px]' : 'w-[240px]',
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2 px-4">
-        <Shield className="h-6 w-6 shrink-0 text-sidebar-primary" />
-        {!collapsed && (
-          <span className="text-lg font-semibold tracking-tight">
-            SynApSec
-          </span>
-        )}
+      <div className="flex h-14 items-center gap-2.5 overflow-hidden px-4">
+        <Shield className="h-6 w-6 shrink-0 text-primary" />
+        <span className={cn(
+          'text-base font-semibold tracking-tight text-foreground transition-opacity duration-150',
+          collapsed ? 'opacity-0' : 'opacity-100',
+        )}>
+          SynApSec
+        </span>
       </div>
 
-      <Separator />
-
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3">
+      <nav className="flex-1 overflow-y-auto px-2 pt-2">
         {/* Primary: analyst workflow */}
-        <div className="space-y-1">
+        {!collapsed && (
+          <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            {t('nav.findings')}
+          </p>
+        )}
+        <div className="space-y-0.5">
           {PRIMARY_NAV.map(renderNavItem)}
         </div>
 
-        {/* Separator between primary and secondary */}
-        <Separator className="my-3" />
+        {/* Divider */}
+        <div className="my-3 border-t border-sidebar-border" />
 
         {/* Secondary: pipeline operations */}
-        <div className="space-y-1">
+        {!collapsed && (
+          <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            Pipeline
+          </p>
+        )}
+        <div className="space-y-0.5">
           {SECONDARY_NAV.map(renderNavItem)}
         </div>
       </nav>
 
       {/* Collapse toggle */}
-      <div className="border-t p-2">
+      <div className="border-t border-sidebar-border p-2">
         <Button
           variant="ghost"
           size="icon"
-          className={cn('w-full', !collapsed && 'justify-end')}
+          className={cn(
+            'h-8 w-full text-muted-foreground hover:text-foreground',
+            !collapsed && 'justify-end',
+          )}
           onClick={onToggle}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <ChevronLeft
             className={cn(
-              'h-4 w-4 transition-transform',
+              'h-4 w-4 transition-transform duration-200',
               collapsed && 'rotate-180',
             )}
           />
