@@ -96,7 +96,10 @@ export function IngestionHistory({ refreshTrigger }: Props) {
                   <TableRow
                     key={log.id}
                     className="cursor-pointer transition-colors hover:bg-muted/50"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleRowClick(log.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(log.id) } }}
                   >
                     <TableCell className="font-medium">{log.source_tool}</TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">

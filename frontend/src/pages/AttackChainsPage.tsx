@@ -67,7 +67,7 @@ export function AttackChainsPage() {
       accessorKey: 'app_name',
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting()}>
-          {t('attackChains.columns.application')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          {t('attackChains.columns.application')} <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -83,7 +83,7 @@ export function AttackChainsPage() {
       accessorKey: 'risk_score',
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting()}>
-          {t('attackChains.columns.riskScore')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          {t('attackChains.columns.riskScore')} <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -99,7 +99,7 @@ export function AttackChainsPage() {
       accessorKey: 'correlation_group_count',
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting()}>
-          {t('attackChains.columns.attackChains')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          {t('attackChains.columns.attackChains')} <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -154,7 +154,7 @@ export function AttackChainsPage() {
       accessorKey: 'uncorrelated_findings',
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting()}>
-          {t('attackChains.columns.uncorrelated')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          {t('attackChains.columns.uncorrelated')} <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -216,12 +216,23 @@ export function AttackChainsPage() {
                     <TableRow
                       key={row.id}
                       className="cursor-pointer transition-colors hover:bg-muted/50"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({
                           to: '/attack-chains/$appId',
                           params: { appId: row.original.application_id },
                         })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          navigate({
+                            to: '/attack-chains/$appId',
+                            params: { appId: row.original.application_id },
+                          })
+                        }
+                      }}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>

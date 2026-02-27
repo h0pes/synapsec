@@ -12,7 +12,12 @@
     "unmapped": "Unmapped Apps",
     "deduplication": "Deduplication",
     "correlation": "Correlation",
-    "attack_chains": "Attack Chains"
+    "attack_chains": "Attack Chains",
+    "sidebar": "Application sidebar",
+    "mainNavigation": "Main navigation",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "pipeline": "Pipeline"
   },
   "auth": {
     "login": "Sign In",
@@ -56,7 +61,11 @@
     "from": "From",
     "to": "To",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "skipToContent": "Skip to main content",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "switchLanguage": "Switch language to {{language}}"
   },
   "dashboard": {
     "charts": {
@@ -145,6 +154,21 @@
       "previous": "Previous",
       "next": "Next"
     }
+  },
+  "triage": {
+    "confirm": "Confirm finding",
+    "requestFalsePositive": "Request false positive"
+  },
+  "ingestion": {
+    "clearFile": "Clear selected file",
+    "title": "Import Findings",
+    "dragDropText": "Drag and drop a file here, or",
+    "browse": "browse",
+    "supportedFormats": "Supports JSON, CSV, XML, SARIF",
+    "parserType": "Parser Type",
+    "format": "Format",
+    "upload": "Upload",
+    "uploading": "Uploading..."
   },
   "findings": {
     "tabs": {
@@ -247,7 +271,8 @@
       "columnSource": "Source",
       "columnStatus": "Status",
       "noData": "No attack chains or findings found for this application"
-    }
+    },
+    "graphAriaLabel": "Attack chain visualization graph"
   },
   "correlation": {
     "title": "Correlation Engine",

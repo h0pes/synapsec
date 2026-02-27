@@ -109,9 +109,17 @@ export function TriageQueuePage() {
                   <TableRow key={f.id} className="transition-colors hover:bg-muted/50">
                     <TableCell
                       className="max-w-[300px] cursor-pointer truncate font-medium hover:text-primary hover:underline"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/findings/$id', params: { id: f.id } })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          navigate({ to: '/findings/$id', params: { id: f.id } })
+                        }
+                      }}
                     >
                       {f.title}
                     </TableCell>
@@ -133,7 +141,7 @@ export function TriageQueuePage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Confirm"
+                          aria-label={t('triage.confirm')}
                           onClick={() => handleConfirm(f.id)}
                         >
                           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -141,7 +149,7 @@ export function TriageQueuePage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Request False Positive"
+                          aria-label={t('triage.requestFalsePositive')}
                           onClick={() => handleFalsePositive(f.id)}
                         >
                           <XCircle className="h-4 w-4 text-orange-600" />

@@ -45,7 +45,7 @@ const columns: ColumnDef<ApplicationSummary>[] = [
     accessorKey: 'app_code',
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting()}>
-        Code <ArrowUpDown className="ml-1 h-3 w-3" />
+        Code <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
@@ -56,7 +56,7 @@ const columns: ColumnDef<ApplicationSummary>[] = [
     accessorKey: 'app_name',
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting()}>
-        Name <ArrowUpDown className="ml-1 h-3 w-3" />
+        Name <ArrowUpDown aria-hidden="true" className="ml-1 h-3 w-3" />
       </Button>
     ),
   },
@@ -192,9 +192,17 @@ export function ApplicationsPage() {
                     <TableRow
                       key={row.id}
                       className="cursor-pointer transition-colors hover:bg-muted/50"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/applications/$id', params: { id: row.original.id } })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          navigate({ to: '/applications/$id', params: { id: row.original.id } })
+                        }
+                      }}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>

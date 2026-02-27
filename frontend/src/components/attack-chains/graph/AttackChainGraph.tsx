@@ -112,7 +112,10 @@ function AttackChainGraphInner({ detail }: AttackChainGraphProps) {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           onNodeClick={handleNodeClick}
+          nodesFocusable
+          edgesFocusable
           fitView
+          aria-label={t('attackChains.graphAriaLabel')}
         >
           <Background />
           <Controls />

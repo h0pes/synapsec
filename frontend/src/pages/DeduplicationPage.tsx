@@ -321,7 +321,7 @@ export function DeduplicationPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title={t('dedup.actions.confirm')}
+                            aria-label={t('dedup.actions.confirm')}
                             disabled={actionInFlight === item.relationship_id}
                             onClick={() => handleConfirm(item.relationship_id)}
                           >
@@ -334,7 +334,7 @@ export function DeduplicationPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title={t('dedup.actions.reject')}
+                            aria-label={t('dedup.actions.reject')}
                             disabled={actionInFlight === item.relationship_id}
                             onClick={() => handleReject(item.relationship_id)}
                           >

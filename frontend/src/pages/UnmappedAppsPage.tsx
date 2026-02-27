@@ -98,10 +98,13 @@ export function UnmappedAppsPage() {
                   <TableRow key={app.id} className="transition-colors hover:bg-muted/50">
                     <TableCell className="font-mono text-sm">{app.app_code}</TableCell>
                     <TableCell
-                      className="cursor-pointer font-medium hover:underline"
+                      className="cursor-pointer font-medium hover:underline hover:text-primary"
+                      role="link"
+                      tabIndex={0}
                       onClick={() =>
                         navigate({ to: '/applications/$id', params: { id: app.id } })
                       }
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate({ to: '/applications/$id', params: { id: app.id } }) } }}
                     >
                       {app.app_name}
                     </TableCell>

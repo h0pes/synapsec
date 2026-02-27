@@ -126,6 +126,7 @@ export function transformAttackChainData(
           isUncorrelated: false,
           chainGroupId: chain.group_id,
         },
+        ariaLabel: `${finding.title} - ${finding.normalized_severity}`,
         width: size.width,
         height: size.height,
       })
@@ -180,6 +181,7 @@ export function transformAttackChainData(
         isUncorrelated: true,
         chainGroupId: null,
       },
+      ariaLabel: `${finding.title} - ${finding.normalized_severity}`,
       width: size.width,
       height: size.height,
     })

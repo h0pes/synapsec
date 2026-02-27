@@ -304,7 +304,10 @@ function GroupRow({
     <>
       <TableRow
         className="cursor-pointer transition-colors hover:bg-muted/50"
+        role="button"
+        tabIndex={0}
         onClick={() => onToggle(group.id)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(group.id) } }}
       >
         <TableCell className="w-[40px]">
           {isExpanded ? (

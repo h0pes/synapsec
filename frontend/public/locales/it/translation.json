@@ -12,7 +12,12 @@
     "unmapped": "App Non Mappate",
     "deduplication": "Deduplicazione",
     "correlation": "Correlazione",
-    "attack_chains": "Catene di Attacco"
+    "attack_chains": "Catene di Attacco",
+    "sidebar": "Barra laterale applicazione",
+    "mainNavigation": "Navigazione principale",
+    "expandSidebar": "Espandi barra laterale",
+    "collapseSidebar": "Comprimi barra laterale",
+    "pipeline": "Pipeline"
   },
   "auth": {
     "login": "Accedi",
@@ -56,7 +61,11 @@
     "from": "Da",
     "to": "A",
     "yes": "Sì",
-    "no": "No"
+    "no": "No",
+    "skipToContent": "Vai al contenuto principale",
+    "switchToLight": "Passa al tema chiaro",
+    "switchToDark": "Passa al tema scuro",
+    "switchLanguage": "Cambia lingua in {{language}}"
   },
   "dashboard": {
     "charts": {
@@ -145,6 +154,21 @@
       "previous": "Precedente",
       "next": "Successivo"
     }
+  },
+  "triage": {
+    "confirm": "Conferma risultato",
+    "requestFalsePositive": "Richiedi falso positivo"
+  },
+  "ingestion": {
+    "clearFile": "Rimuovi file selezionato",
+    "title": "Importa Risultati",
+    "dragDropText": "Trascina e rilascia un file qui, o",
+    "browse": "sfoglia",
+    "supportedFormats": "Supporta JSON, CSV, XML, SARIF",
+    "parserType": "Tipo di Parser",
+    "format": "Formato",
+    "upload": "Carica",
+    "uploading": "Caricamento..."
   },
   "findings": {
     "tabs": {
@@ -247,7 +271,8 @@
       "columnSource": "Sorgente",
       "columnStatus": "Stato",
       "noData": "Nessuna catena di attacco o risultato trovato per questa applicazione"
-    }
+    },
+    "graphAriaLabel": "Grafo di visualizzazione catena di attacco"
   },
   "correlation": {
     "title": "Motore di Correlazione",

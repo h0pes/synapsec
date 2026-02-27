@@ -73,12 +73,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           collapsed && 'justify-center px-2',
         )}
         title={collapsed ? t(item.labelKey) : undefined}
+        aria-label={collapsed ? t(item.labelKey) : undefined}
       >
         {/* Active accent bar */}
         {active && (
           <span className="absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-primary" />
         )}
-        <item.icon className={cn(
+        <item.icon aria-hidden="true" className={cn(
           'h-[18px] w-[18px] shrink-0 transition-colors',
           active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
         )} />
@@ -95,6 +96,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         'flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 ease-in-out',
         collapsed ? 'w-[60px]' : 'w-[240px]',
       )}
+      aria-label={t('nav.sidebar')}
     >
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 overflow-hidden px-4">
@@ -108,7 +110,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 pt-2">
+      <nav className="flex-1 overflow-y-auto px-2 pt-2" aria-label={t('nav.mainNavigation')}>
         {/* Primary: analyst workflow */}
         {!collapsed && (
           <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -125,7 +127,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Secondary: pipeline operations */}
         {!collapsed && (
           <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-            Pipeline
+            {t('nav.pipeline')}
           </p>
         )}
         <div className="space-y-0.5">
@@ -143,9 +145,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             !collapsed && 'justify-end',
           )}
           onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
+          aria-expanded={!collapsed}
         >
           <ChevronLeft
+            aria-hidden="true"
             className={cn(
               'h-4 w-4 transition-transform duration-200',
               collapsed && 'rotate-180',

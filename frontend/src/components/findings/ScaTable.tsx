@@ -344,8 +344,11 @@ export function ScaTable({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="cursor-pointer"
+                className="cursor-pointer transition-colors hover:bg-muted/50"
+                role="link"
+                tabIndex={0}
                 onClick={() => handleRowClick(row.original.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(row.original.id) } }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

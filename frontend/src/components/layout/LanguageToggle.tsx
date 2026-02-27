@@ -8,7 +8,7 @@ const LANGUAGES = [
 ] as const
 
 export function LanguageToggle() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const current = i18n.language
   const next = LANGUAGES.find((l) => l.code !== current) ?? LANGUAGES[0]
@@ -18,10 +18,10 @@ export function LanguageToggle() {
       variant="ghost"
       size="icon"
       onClick={() => i18n.changeLanguage(next.code)}
-      aria-label={`Switch language to ${next.label}`}
+      aria-label={t('common.switchLanguage', { language: next.label })}
       title={next.label}
     >
-      <Languages className="h-4 w-4" />
+      <Languages aria-hidden="true" className="h-4 w-4" />
     </Button>
   )
 }
