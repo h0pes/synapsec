@@ -39,6 +39,27 @@
     "from": "Da",
     "to": "A"
   },
+  "dashboard": {
+    "charts": {
+      "severityDistribution": "Distribuzione per Gravit\u00e0",
+      "findingsBySource": "Risultati per Sorgente",
+      "riskiestApps": "Applicazioni pi\u00f9 a Rischio",
+      "slaCompliance": "Conformit\u00e0 SLA"
+    },
+    "severity": {
+      "critical": "Critico",
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Basso",
+      "info": "Info"
+    },
+    "sla": {
+      "onTrack": "In Regola",
+      "atRisk": "A Rischio",
+      "breached": "Violato"
+    },
+    "other": "Altro"
+  },
   "dedup": {
     "title": "Dashboard Deduplicazione",
     "stats": {

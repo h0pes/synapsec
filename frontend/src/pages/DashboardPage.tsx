@@ -12,6 +12,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SeverityBadge } from '@/components/findings/SeverityBadge'
+import { SeverityChart } from '@/components/dashboard/SeverityChart'
+import { SourceToolChart } from '@/components/dashboard/SourceToolChart'
+import { TopAppsChart } from '@/components/dashboard/TopAppsChart'
+import { SlaChart } from '@/components/dashboard/SlaChart'
 import * as dashboardApi from '@/api/dashboard'
 import type { DashboardStats } from '@/api/dashboard'
 
@@ -118,6 +122,45 @@ export function DashboardPage() {
               <SeverityBadge severity="Low" count={stats.severity_counts.low} />
               <SeverityBadge severity="Info" count={stats.severity_counts.info} />
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Chart widgets */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.charts.severityDistribution')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SeverityChart counts={stats.severity_counts} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.charts.findingsBySource')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SourceToolChart data={stats.findings_by_source} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.charts.riskiestApps')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopAppsChart apps={stats.top_risky_apps} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.charts.slaCompliance')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SlaChart summary={stats.sla_summary} />
           </CardContent>
         </Card>
       </div>

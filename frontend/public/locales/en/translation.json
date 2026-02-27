@@ -39,6 +39,27 @@
     "from": "From",
     "to": "To"
   },
+  "dashboard": {
+    "charts": {
+      "severityDistribution": "Severity Distribution",
+      "findingsBySource": "Findings by Source",
+      "riskiestApps": "Riskiest Applications",
+      "slaCompliance": "SLA Compliance"
+    },
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "info": "Info"
+    },
+    "sla": {
+      "onTrack": "On Track",
+      "atRisk": "At Risk",
+      "breached": "Breached"
+    },
+    "other": "Other"
+  },
   "dedup": {
     "title": "Deduplication Dashboard",
     "stats": {
