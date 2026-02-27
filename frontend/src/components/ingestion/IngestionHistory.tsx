@@ -64,8 +64,11 @@ export function IngestionHistory({ refreshTrigger }: Props) {
   return (
     <div className="space-y-4">
       {loading ? (
-        <div className="flex h-32 items-center justify-center text-muted-foreground">
-          Loading...
+        <div className="space-y-3">
+          <div className="skeleton h-10 rounded-lg stagger-1" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
+          ))}
         </div>
       ) : logs.length === 0 ? (
         <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -73,7 +76,7 @@ export function IngestionHistory({ refreshTrigger }: Props) {
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -92,7 +95,7 @@ export function IngestionHistory({ refreshTrigger }: Props) {
                 {logs.map((log) => (
                   <TableRow
                     key={log.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer transition-colors hover:bg-muted/50"
                     onClick={() => handleRowClick(log.id)}
                   >
                     <TableCell className="font-medium">{log.source_tool}</TableCell>

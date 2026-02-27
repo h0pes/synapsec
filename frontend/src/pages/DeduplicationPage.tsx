@@ -158,17 +158,17 @@ export function DeduplicationPage() {
 
   if (statsLoading && pendingLoading && historyLoading) {
     return (
-      <div className="space-y-6">
+      <div className="animate-in space-y-6">
         <div className="skeleton h-8 w-48" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton h-[100px] rounded-xl" />
+            <div key={i} className={`skeleton h-[100px] rounded-xl stagger-${i + 1}`} />
           ))}
         </div>
         <div className="space-y-3">
-          <div className="skeleton h-10 rounded-lg" />
+          <div className="skeleton h-10 rounded-lg stagger-6" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="skeleton h-12 rounded-lg" />
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${Math.min(i + 7, 8)}`} />
           ))}
         </div>
       </div>
@@ -176,12 +176,12 @@ export function DeduplicationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-in space-y-6">
       <PageHeader title={t('dedup.title')} />
 
       {/* Section 1 — Statistics cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
+        <Card className="animate-in stagger-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.totalDuplicates')}
@@ -195,7 +195,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.pendingReview')}
@@ -209,7 +209,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.confirmed')}
@@ -223,7 +223,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-4">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.rejected')}
@@ -237,7 +237,7 @@ export function DeduplicationPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-in stagger-5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t('dedup.stats.totalIngestions')}
@@ -261,7 +261,7 @@ export function DeduplicationPage() {
       <Separator />
 
       {/* Section 2 — Pending Review table */}
-      <div className="space-y-4">
+      <div className="animate-in stagger-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('dedup.pending.title')}</h2>
           <span className="text-sm text-muted-foreground">
@@ -271,9 +271,9 @@ export function DeduplicationPage() {
 
         {pendingLoading ? (
           <div className="space-y-3">
-            <div className="skeleton h-10 rounded-lg" />
+            <div className="skeleton h-10 rounded-lg stagger-1" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="skeleton h-12 rounded-lg" />
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
             ))}
           </div>
         ) : pending.length === 0 ? (
@@ -282,7 +282,7 @@ export function DeduplicationPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-[var(--shadow-card)]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -295,7 +295,7 @@ export function DeduplicationPage() {
                 </TableHeader>
                 <TableBody>
                   {pending.map((item) => (
-                    <TableRow key={item.relationship_id}>
+                    <TableRow key={item.relationship_id} className="transition-colors hover:bg-muted/50">
                       <TableCell>
                         <div>
                           <p className="max-w-[240px] truncate font-medium">{item.source_title}</p>
@@ -362,7 +362,7 @@ export function DeduplicationPage() {
       <Separator />
 
       {/* Section 3 — Decision History table */}
-      <div className="space-y-4">
+      <div className="animate-in stagger-7 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('dedup.history.title')}</h2>
           <span className="text-sm text-muted-foreground">
@@ -372,9 +372,9 @@ export function DeduplicationPage() {
 
         {historyLoading ? (
           <div className="space-y-3">
-            <div className="skeleton h-10 rounded-lg" />
+            <div className="skeleton h-10 rounded-lg stagger-1" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="skeleton h-12 rounded-lg" />
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
             ))}
           </div>
         ) : history.length === 0 ? (
@@ -383,7 +383,7 @@ export function DeduplicationPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-[var(--shadow-card)]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -397,7 +397,7 @@ export function DeduplicationPage() {
                 </TableHeader>
                 <TableBody>
                   {history.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="transition-colors hover:bg-muted/50">
                       <TableCell>
                         <Badge variant="outline" className={actionBadgeClass(item.action)}>
                           {item.action}

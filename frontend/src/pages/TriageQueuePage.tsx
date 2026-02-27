@@ -71,7 +71,7 @@ export function TriageQueuePage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <PageHeader title={t('nav.triage')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? t('common.finding') : t('common.findings')} {t('common.awaitingTriage')}
@@ -80,9 +80,9 @@ export function TriageQueuePage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="skeleton h-10 rounded-lg" />
+          <div className="skeleton h-10 rounded-lg stagger-1" />
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="skeleton h-12 rounded-lg" />
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
           ))}
         </div>
       ) : findings.length === 0 ? (
@@ -91,7 +91,7 @@ export function TriageQueuePage() {
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -106,9 +106,9 @@ export function TriageQueuePage() {
               </TableHeader>
               <TableBody>
                 {findings.map((f) => (
-                  <TableRow key={f.id}>
+                  <TableRow key={f.id} className="transition-colors hover:bg-muted/50">
                     <TableCell
-                      className="max-w-[300px] cursor-pointer truncate font-medium hover:underline"
+                      className="max-w-[300px] cursor-pointer truncate font-medium hover:text-primary hover:underline"
                       onClick={() =>
                         navigate({ to: '/findings/$id', params: { id: f.id } })
                       }

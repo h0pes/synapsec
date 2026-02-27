@@ -57,7 +57,7 @@ export function UnmappedAppsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <PageHeader title={t('nav.unmapped')}>
         <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           <AlertTriangle className="mr-1 h-3 w-3" />
@@ -65,15 +65,15 @@ export function UnmappedAppsPage() {
         </Badge>
       </PageHeader>
 
-      <p className="text-sm text-muted-foreground">
+      <p className="animate-in stagger-1 text-sm text-muted-foreground">
         {t('common.unmappedDescription')}
       </p>
 
       {loading ? (
         <div className="space-y-3">
-          <div className="skeleton h-10 rounded-lg" />
+          <div className="skeleton h-10 rounded-lg stagger-1" />
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="skeleton h-12 rounded-lg" />
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
           ))}
         </div>
       ) : apps.length === 0 ? (
@@ -82,7 +82,7 @@ export function UnmappedAppsPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -95,7 +95,7 @@ export function UnmappedAppsPage() {
               </TableHeader>
               <TableBody>
                 {apps.map((app) => (
-                  <TableRow key={app.id}>
+                  <TableRow key={app.id} className="transition-colors hover:bg-muted/50">
                     <TableCell className="font-mono text-sm">{app.app_code}</TableCell>
                     <TableCell
                       className="cursor-pointer font-medium hover:underline"

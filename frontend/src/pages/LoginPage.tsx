@@ -98,8 +98,8 @@ export function LoginPage() {
             <p className="text-sm text-muted-foreground">{t('auth.signInSubtitle')}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border bg-card p-6 shadow-[var(--shadow-card)]">
+            <div className="stagger-1 space-y-2">
               <Label htmlFor="username">{t('auth.username')}</Label>
               <Input
                 id="username"
@@ -112,7 +112,7 @@ export function LoginPage() {
                 className="h-11"
               />
             </div>
-            <div className="space-y-2">
+            <div className="stagger-2 space-y-2">
               <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
@@ -133,7 +133,7 @@ export function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="h-11 w-full" disabled={loading}>
+            <Button type="submit" className="stagger-3 h-11 w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

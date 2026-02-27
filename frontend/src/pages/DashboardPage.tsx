@@ -188,7 +188,7 @@ export function DashboardPage() {
       {/* Bottom row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent ingestions */}
-        <Card className="animate-in">
+        <Card className="animate-in stagger-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-4 w-4" /> {t('dashboard.recentImports')}
@@ -237,7 +237,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Top risky apps */}
-        <Card className="animate-in">
+        <Card className="animate-in stagger-7">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" /> {t('dashboard.riskiestApplications')}

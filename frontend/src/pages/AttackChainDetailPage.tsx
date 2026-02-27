@@ -61,8 +61,17 @@ export function AttackChainDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common.loading')}
+      <div className="animate-in space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="skeleton h-10 w-10 rounded-md" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-8 w-64 rounded-md stagger-1" />
+            <div className="skeleton h-5 w-48 rounded-md stagger-2" />
+          </div>
+        </div>
+        <div className="skeleton h-[200px] rounded-xl stagger-3" />
+        <div className="skeleton h-[200px] rounded-xl stagger-4" />
+        <div className="skeleton h-[160px] rounded-xl stagger-5" />
       </div>
     )
   }
@@ -76,12 +85,13 @@ export function AttackChainDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-in space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Button
           variant="ghost"
           size="icon"
+          aria-label={t('common.back')}
           onClick={() => navigate({ to: '/attack-chains' })}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -125,7 +135,9 @@ export function AttackChainDetailPage() {
 
       {/* Graph View */}
       {viewMode === 'graph' && (
-        <AttackChainGraph detail={detail} />
+        <div className="animate-in">
+          <AttackChainGraph detail={detail} />
+        </div>
       )}
 
       {/* Cards View */}
@@ -135,8 +147,8 @@ export function AttackChainDetailPage() {
           {detail.chains.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">{t('attackChains.detail.chainsTitle')}</h2>
-              {detail.chains.map((chain) => (
-                <Card key={chain.group_id}>
+              {detail.chains.map((chain, idx) => (
+                <Card key={chain.group_id} className={`animate-in stagger-${Math.min(idx + 1, 8)}`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <CardTitle className="text-base leading-snug">
@@ -198,7 +210,7 @@ export function AttackChainDetailPage() {
                   ({detail.uncorrelated_findings.length})
                 </span>
               </h2>
-              <div className="rounded-md border">
+              <div className="rounded-md border shadow-[var(--shadow-card)]">
                 <Table>
                   <TableHeader>
                     <TableRow>

@@ -54,7 +54,7 @@ export function CorrelationPage() {
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <PageHeader title={t('correlation.title')} />
 
       <Tabs defaultValue="rules">
@@ -63,11 +63,11 @@ export function CorrelationPage() {
           <TabsTrigger value="groups">{t('correlation.tabs.groups')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rules">
+        <TabsContent value="rules" className="animate-in">
           <RulesTab />
         </TabsContent>
 
-        <TabsContent value="groups">
+        <TabsContent value="groups" className="animate-in">
           <GroupsTab />
         </TabsContent>
       </Tabs>
@@ -101,9 +101,9 @@ function RulesTab() {
   if (loading) {
     return (
       <div className="space-y-3 mt-4">
-        <div className="skeleton h-10 rounded-lg" />
+        <div className="skeleton h-10 rounded-lg stagger-1" />
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="skeleton h-12 rounded-lg" />
+          <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
         ))}
       </div>
     )
@@ -118,7 +118,7 @@ function RulesTab() {
   }
 
   return (
-    <div className="mt-4 rounded-md border">
+    <div className="mt-4 rounded-md border shadow-[var(--shadow-card)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -131,7 +131,7 @@ function RulesTab() {
         </TableHeader>
         <TableBody>
           {rules.map((rule) => (
-            <TableRow key={rule.id}>
+            <TableRow key={rule.id} className="transition-colors hover:bg-muted/50">
               <TableCell className="font-medium">{rule.name}</TableCell>
               <TableCell>
                 <Badge variant="outline">{formatRuleType(rule.rule_type)}</Badge>
@@ -223,9 +223,9 @@ function GroupsTab() {
   if (loading) {
     return (
       <div className="space-y-3 mt-4">
-        <div className="skeleton h-10 rounded-lg" />
+        <div className="skeleton h-10 rounded-lg stagger-1" />
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="skeleton h-12 rounded-lg" />
+          <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
         ))}
       </div>
     )
@@ -247,7 +247,7 @@ function GroupsTab() {
         </span>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border shadow-[var(--shadow-card)]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -303,7 +303,7 @@ function GroupRow({
   return (
     <>
       <TableRow
-        className="cursor-pointer hover:bg-muted/50"
+        className="cursor-pointer transition-colors hover:bg-muted/50"
         onClick={() => onToggle(group.id)}
       >
         <TableCell className="w-[40px]">

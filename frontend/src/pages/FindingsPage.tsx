@@ -165,7 +165,7 @@ export function FindingsPage() {
   }, [])
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <PageHeader title={t('nav.findings')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? t('common.finding') : t('common.findings')}
@@ -198,12 +198,12 @@ export function FindingsPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="skeleton h-12 rounded-lg" />
+              <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 1}`} />
             ))}
           </div>
         ) : (
           <>
-            <TabsContent value="all">
+            <TabsContent value="all" className="animate-in">
               <FindingList
                 findings={findings}
                 onRowClick={handleRowClick}
@@ -213,7 +213,7 @@ export function FindingsPage() {
               />
             </TabsContent>
 
-            <TabsContent value="sast">
+            <TabsContent value="sast" className="animate-in">
               <SastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
@@ -223,7 +223,7 @@ export function FindingsPage() {
               />
             </TabsContent>
 
-            <TabsContent value="sca">
+            <TabsContent value="sca" className="animate-in">
               <ScaTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}
@@ -233,7 +233,7 @@ export function FindingsPage() {
               />
             </TabsContent>
 
-            <TabsContent value="dast">
+            <TabsContent value="dast" className="animate-in">
               <DastTable
                 findings={categoryFindings}
                 onRowClick={handleRowClick}

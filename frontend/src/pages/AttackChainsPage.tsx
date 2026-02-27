@@ -173,7 +173,7 @@ export function AttackChainsPage() {
   })
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <PageHeader title={t('attackChains.title')}>
         <span className="text-sm text-muted-foreground">
           {total} {total === 1 ? t('attackChains.applicationSingular') : t('attackChains.applicationPlural')}
@@ -182,14 +182,14 @@ export function AttackChainsPage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="skeleton h-10 rounded-lg" />
+          <div className="skeleton h-10 rounded-lg stagger-1" />
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="skeleton h-12 rounded-lg" />
+            <div key={i} className={`skeleton h-12 rounded-lg stagger-${i + 2}`} />
           ))}
         </div>
       ) : (
         <>
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((hg) => (
@@ -215,7 +215,7 @@ export function AttackChainsPage() {
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
-                      className="cursor-pointer"
+                      className="cursor-pointer transition-colors hover:bg-muted/50"
                       onClick={() =>
                         navigate({
                           to: '/attack-chains/$appId',

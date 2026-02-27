@@ -193,7 +193,7 @@ export function FindingList({
   )
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border shadow-[var(--shadow-card)]">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

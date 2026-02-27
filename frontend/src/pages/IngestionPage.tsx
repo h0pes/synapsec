@@ -18,15 +18,17 @@ export function IngestionPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-in space-y-6">
       <PageHeader title={t('nav.ingestion')} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <FileUpload onComplete={handleComplete} />
+        <div className="animate-in stagger-1">
+          <FileUpload onComplete={handleComplete} />
+        </div>
 
         {/* Result summary */}
         {lastResult && (
-          <Card>
+          <Card className="animate-in stagger-2">
             <CardContent className="flex items-start gap-4 pt-6">
               <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-green-600" />
               <div className="space-y-2">
@@ -54,7 +56,7 @@ export function IngestionPage() {
       </div>
 
       {/* History */}
-      <div>
+      <div className="animate-in stagger-3">
         <h2 className="mb-4 text-lg font-semibold">Import History</h2>
         <IngestionHistory refreshTrigger={refreshTrigger} />
       </div>
