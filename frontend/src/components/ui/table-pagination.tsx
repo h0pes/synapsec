@@ -38,7 +38,7 @@ export function TablePagination({ page, totalPages, onPageChange }: TablePaginat
   const pages = getPageNumbers(page, totalPages)
 
   return (
-    <div className="flex items-center justify-between">
+    <nav className="flex items-center justify-between" aria-label={t('common.pagination')}>
       <span className="text-sm text-muted-foreground">
         {t('common.page')} {page} {t('common.of')} {totalPages}
       </span>
@@ -65,6 +65,7 @@ export function TablePagination({ page, totalPages, onPageChange }: TablePaginat
               size="icon-sm"
               onClick={() => onPageChange(p)}
               aria-current={p === page ? 'page' : undefined}
+              aria-label={`${t('common.page')} ${p}`}
             >
               {p}
             </Button>
@@ -81,6 +82,6 @@ export function TablePagination({ page, totalPages, onPageChange }: TablePaginat
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </nav>
   )
 }
