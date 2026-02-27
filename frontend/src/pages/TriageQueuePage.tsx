@@ -74,7 +74,7 @@ export function TriageQueuePage() {
     <div className="space-y-4">
       <PageHeader title={t('nav.triage')}>
         <span className="text-sm text-muted-foreground">
-          {total} {total === 1 ? 'finding' : 'findings'} awaiting triage
+          {total} {total === 1 ? t('common.finding') : t('common.findings')} {t('common.awaitingTriage')}
         </span>
       </PageHeader>
 
@@ -84,7 +84,7 @@ export function TriageQueuePage() {
         </div>
       ) : findings.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          No findings awaiting triage
+          {t('common.noFindingsAwaitingTriage')}
         </div>
       ) : (
         <>

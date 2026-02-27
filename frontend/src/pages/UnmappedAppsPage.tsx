@@ -61,13 +61,12 @@ export function UnmappedAppsPage() {
       <PageHeader title={t('nav.unmapped')}>
         <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           <AlertTriangle className="mr-1 h-3 w-3" />
-          {total} unverified
+          {total} {t('common.unverified')}
         </Badge>
       </PageHeader>
 
       <p className="text-sm text-muted-foreground">
-        These applications were auto-created from scanner project names during ingestion.
-        Review and verify them, or merge with existing applications.
+        {t('common.unmappedDescription')}
       </p>
 
       {loading ? (
@@ -76,7 +75,7 @@ export function UnmappedAppsPage() {
         </div>
       ) : apps.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          No unmapped applications
+          {t('common.noUnmappedApps')}
         </div>
       ) : (
         <>

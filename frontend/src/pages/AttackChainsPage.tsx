@@ -26,17 +26,9 @@ import {
   TOOL_BADGE_STYLES,
   TOOL_CATEGORY_LABELS,
 } from '@/lib/findings'
+import { SEVERITY_STYLES } from '@/components/findings/SeverityBadge'
 import * as attackChainsApi from '@/api/attack-chains'
 import type { AppAttackChainSummary } from '@/types/attack-chains'
-import type { SeverityLevel } from '@/types/finding'
-
-const SEVERITY_STYLES: Record<SeverityLevel, string> = {
-  Critical: 'bg-severity-critical text-white',
-  High: 'bg-severity-high text-white',
-  Medium: 'bg-severity-medium text-black',
-  Low: 'bg-severity-low text-white',
-  Info: 'bg-severity-info text-white',
-}
 
 export function AttackChainsPage() {
   const { t } = useTranslation()

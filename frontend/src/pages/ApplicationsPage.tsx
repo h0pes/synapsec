@@ -152,7 +152,7 @@ export function ApplicationsPage() {
     <div className="space-y-4">
       <PageHeader title={t('nav.applications')}>
         <span className="text-sm text-muted-foreground">
-          {total} {total === 1 ? 'application' : 'applications'}
+          {total} {total === 1 ? t('common.application') : t('common.applications')}
         </span>
       </PageHeader>
 
@@ -181,7 +181,7 @@ export function ApplicationsPage() {
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No applications found
+                      {t('common.noApplicationsFound')}
                     </TableCell>
                   </TableRow>
                 ) : (

@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import type { SeverityLevel } from '@/types/finding'
 
-const SEVERITY_STYLES: Record<SeverityLevel, string> = {
+export const SEVERITY_STYLES: Record<SeverityLevel, string> = {
   Critical: 'bg-severity-critical text-white',
   High: 'bg-severity-high text-white',
   Medium: 'bg-severity-medium text-black',

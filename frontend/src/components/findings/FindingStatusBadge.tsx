@@ -9,7 +9,7 @@ const STATUS_STYLES: Record<FindingStatus, string> = {
   Mitigated: 'border-cyan-400/50 bg-cyan-50 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300',
   Verified: 'border-teal-400/50 bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300',
   Closed: 'border-green-400/50 bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-300',
-  False_Positive_Requested: 'border-amber-400/50 bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
+  False_Positive_Requested: 'border-rose-400/50 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
   False_Positive: 'border-gray-400/50 bg-gray-50 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   Risk_Accepted: 'border-orange-400/50 bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300',
   Deferred_Remediation: 'border-indigo-400/50 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300',
