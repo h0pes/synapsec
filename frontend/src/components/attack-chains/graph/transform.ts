@@ -52,7 +52,7 @@ const DEFAULT_SIZE = { width: 180, height: 64 }
 
 /** Optional filters for the graph transformation. */
 export type TransformFilters = {
-  /** Only include chains whose max_severity risk meets this threshold (0-100). */
+  /** Only include findings whose severity rank meets this threshold (1–5). */
   minRiskScore?: number
   /** Only include findings whose finding_category is in this set. */
   categories?: Set<string>
@@ -155,6 +155,14 @@ export function transformAttackChainData(
 
   // -- Uncorrelated findings --
   for (const finding of detail.uncorrelated_findings) {
+    // Apply risk-score filter at individual finding level
+    if (
+      filters?.minRiskScore != null &&
+      severityRank(finding.normalized_severity) < filters.minRiskScore
+    ) {
+      continue
+    }
+
     if (filters?.categories && filters.categories.size > 0) {
       if (!filters.categories.has(finding.finding_category)) {
         continue
