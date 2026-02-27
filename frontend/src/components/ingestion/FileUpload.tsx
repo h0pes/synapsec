@@ -22,7 +22,21 @@ export function FileUpload({ onComplete }: Props) {
   const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [parserType, setParserType] = useState('sonarqube')
-  const [format, setFormat] = useState('json')
+  const [format, setFormat] = useState('csv')
+
+  const defaultFormats: Record<string, string> = {
+    sonarqube: 'csv',
+    sarif: 'sarif',
+    jfrog_xray: 'json',
+    tenable_was: 'csv',
+  }
+
+  function handleParserTypeChange(value: string) {
+    setParserType(value)
+    if (defaultFormats[value]) {
+      setFormat(defaultFormats[value])
+    }
+  }
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -123,13 +137,15 @@ export function FileUpload({ onComplete }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t('ingestion.parserType')}</Label>
-            <Select value={parserType} onValueChange={setParserType}>
+            <Select value={parserType} onValueChange={handleParserTypeChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sonarqube">SonarQube</SelectItem>
                 <SelectItem value="sarif">SARIF</SelectItem>
+                <SelectItem value="jfrog_xray">JFrog Xray</SelectItem>
+                <SelectItem value="tenable_was">Tenable WAS</SelectItem>
               </SelectContent>
             </Select>
           </div>
