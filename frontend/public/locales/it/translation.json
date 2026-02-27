@@ -131,6 +131,9 @@
       "hierarchical": "Da Sinistra a Destra",
       "forceDirected": "Dall'Alto in Basso"
     },
+    "edgeTooltip": {
+      "confidence": "Confidenza"
+    },
     "findingPanel": {
       "title": "Dettagli Risultato",
       "severity": "Gravit\u00e0",

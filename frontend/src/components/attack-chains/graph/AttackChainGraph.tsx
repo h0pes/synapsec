@@ -27,6 +27,7 @@ import {
 } from '@/lib/findings'
 import { FindingNode } from './FindingNode'
 import { CorrelationEdge } from './CorrelationEdge'
+import { GraphControlsPanel } from './GraphControlsPanel'
 import { transformAttackChainData } from './transform'
 import { applyDagreLayout } from './layout'
 import type { LayoutDirection } from './layout'
@@ -36,6 +37,9 @@ import type { AppAttackChainDetail, ChainFinding, UncorrelatedFinding } from '@/
 const nodeTypes = { finding: FindingNode }
 const edgeTypes = { correlation: CorrelationEdge }
 
+/** All available finding categories. */
+const ALL_CATEGORIES = new Set(['SAST', 'SCA', 'DAST'])
+
 interface AttackChainGraphProps {
   detail: AppAttackChainDetail
 }
@@ -44,12 +48,32 @@ function AttackChainGraphInner({ detail }: AttackChainGraphProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [layout, setLayout] = useState<LayoutDirection>('LR')
+  const [minRiskScore, setMinRiskScore] = useState(1)
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(
+    () => new Set(ALL_CATEGORIES),
+  )
   const [selectedFinding, setSelectedFinding] = useState<(ChainFinding | UncorrelatedFinding) | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
+  const handleToggleCategory = useCallback((category: string) => {
+    setActiveCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(category)) {
+        next.delete(category)
+      } else {
+        next.add(category)
+      }
+      return next
+    })
+  }, [])
+
   const { nodes: rawNodes, edges } = useMemo(
-    () => transformAttackChainData(detail),
-    [detail],
+    () =>
+      transformAttackChainData(detail, {
+        minRiskScore,
+        categories: activeCategories,
+      }),
+    [detail, minRiskScore, activeCategories],
   )
 
   const nodes = useMemo(
@@ -70,30 +94,15 @@ function AttackChainGraphInner({ detail }: AttackChainGraphProps) {
 
   return (
     <div className="space-y-3">
-      {/* Layout toggle */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-muted-foreground">
-          {t('attackChains.graphControls.layout')}:
-        </span>
-        <div className="inline-flex rounded-md border">
-          <Button
-            variant={layout === 'LR' ? 'default' : 'ghost'}
-            size="sm"
-            className="rounded-r-none"
-            onClick={() => setLayout('LR')}
-          >
-            {t('attackChains.graphControls.hierarchical')}
-          </Button>
-          <Button
-            variant={layout === 'TB' ? 'default' : 'ghost'}
-            size="sm"
-            className="rounded-l-none"
-            onClick={() => setLayout('TB')}
-          >
-            {t('attackChains.graphControls.forceDirected')}
-          </Button>
-        </div>
-      </div>
+      {/* Graph controls panel */}
+      <GraphControlsPanel
+        minRiskScore={minRiskScore}
+        onMinRiskScoreChange={setMinRiskScore}
+        activeCategories={activeCategories}
+        onToggleCategory={handleToggleCategory}
+        layout={layout}
+        onLayoutChange={setLayout}
+      />
 
       {/* Graph canvas */}
       <div className="rounded-md border" style={{ height: '600px' }}>

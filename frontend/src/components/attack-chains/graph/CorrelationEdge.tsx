@@ -1,10 +1,17 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BaseEdge, getBezierPath } from '@xyflow/react'
 import type { EdgeProps } from '@xyflow/react'
 import type { CorrelationEdge as CorrelationEdgeType } from './transform'
 
 /** Neutral gray for edge strokes, consistent in light and dark themes. */
 const EDGE_COLOR = '#94a3b8' // slate-400
+
+/** Width of the foreignObject that hosts the label and tooltip. */
+const LABEL_OBJECT_WIDTH = 140
+
+/** Height of the foreignObject that hosts the label and tooltip. */
+const LABEL_OBJECT_HEIGHT = 20
 
 /**
  * Map confidence levels to SVG stroke-dasharray values:
@@ -33,6 +40,7 @@ function strokeDashArrayForConfidence(confidence: string | null): string | undef
  * - Dashed stroke for medium-confidence correlations
  * - Dotted stroke for low or unknown confidence
  * - Neutral gray color for all edges
+ * - Hoverable label at midpoint showing relationship type with tooltip
  */
 function CorrelationEdgeComponent({
   id,
@@ -45,6 +53,9 @@ function CorrelationEdgeComponent({
   data,
   markerEnd,
 }: EdgeProps<CorrelationEdgeType>) {
+  const { t } = useTranslation()
+  const [hovered, setHovered] = useState(false)
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -70,19 +81,40 @@ function CorrelationEdgeComponent({
           strokeDasharray: dashArray,
         }}
       />
-      {/* Relationship type label at the midpoint of the edge */}
+      {/* Relationship type label at the midpoint of the edge, with tooltip on hover */}
       {relationshipType && (
         <foreignObject
-          x={labelX - 40}
-          y={labelY - 10}
-          width={80}
-          height={20}
-          className="pointer-events-none overflow-visible"
+          x={labelX - LABEL_OBJECT_WIDTH / 2}
+          y={labelY - LABEL_OBJECT_HEIGHT / 2}
+          width={LABEL_OBJECT_WIDTH}
+          height={LABEL_OBJECT_HEIGHT}
+          className="overflow-visible"
         >
-          <div className="flex items-center justify-center">
-            <span className="rounded bg-background/80 px-1 py-0.5 text-[9px] text-muted-foreground backdrop-blur-sm">
+          <div
+            className="relative flex items-center justify-center"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+          >
+            <span className="cursor-default rounded bg-background/80 px-1 py-0.5 text-[9px] text-muted-foreground backdrop-blur-sm">
               {relationshipType}
             </span>
+
+            {/* Tooltip shown on hover */}
+            {hovered && (
+              <div
+                className="absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-md"
+                role="tooltip"
+              >
+                <div className="font-medium">{relationshipType}</div>
+                {confidence && (
+                  <div className="text-background/70">
+                    {t('attackChains.edgeTooltip.confidence')}: {confidence}
+                  </div>
+                )}
+                {/* Arrow pointing down */}
+                <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+              </div>
+            )}
           </div>
         </foreignObject>
       )}

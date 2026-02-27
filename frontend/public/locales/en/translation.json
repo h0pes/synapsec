@@ -131,6 +131,9 @@
       "hierarchical": "Left to Right",
       "forceDirected": "Top Down"
     },
+    "edgeTooltip": {
+      "confidence": "Confidence"
+    },
     "findingPanel": {
       "title": "Finding Details",
       "severity": "Severity",
