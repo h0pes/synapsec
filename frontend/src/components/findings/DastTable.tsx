@@ -50,16 +50,6 @@ const STATUS_OPTIONS: readonly { value: string; label: string }[] = [
   { value: 'Risk_Accepted', label: 'Risk Accepted' },
 ]
 
-const HTTP_METHOD_OPTIONS: readonly { value: string; label: string }[] = [
-  { value: 'GET', label: 'GET' },
-  { value: 'POST', label: 'POST' },
-  { value: 'PUT', label: 'PUT' },
-  { value: 'DELETE', label: 'DELETE' },
-  { value: 'PATCH', label: 'PATCH' },
-  { value: 'OPTIONS', label: 'OPTIONS' },
-  { value: 'HEAD', label: 'HEAD' },
-]
-
 /**
  * Maps TanStack Table column filter state to backend API query parameter names.
  *
@@ -84,14 +74,8 @@ function mapFiltersToApiParams(columnFilters: ColumnFiltersState): Record<string
       case 'category_data.target_url':
         params.target_url = filter.value as string
         break
-      case 'category_data.parameter':
-        params.parameter = filter.value as string
-        break
       case 'category_data.web_application_name':
         params.dns_name = filter.value as string
-        break
-      case 'category_data.http_method':
-        params.http_method = filter.value as string
         break
       case 'first_seen': {
         const range = filter.value as DateRangeFilterValue | undefined
@@ -192,8 +176,7 @@ export function DastTable({
           </span>
         ),
         size: 140,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'text' },
+        enableColumnFilter: false,
       },
       {
         id: 'category_data.web_application_name',
@@ -217,8 +200,7 @@ export function DastTable({
             '-'
           ),
         size: 100,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'select', filterOptions: HTTP_METHOD_OPTIONS },
+        enableColumnFilter: false,
       },
       {
         accessorKey: 'first_seen',

@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   useReactTable,
@@ -26,7 +26,6 @@ import {
   DateRangeColumnFilter,
 } from '@/components/findings/filters'
 import type { FindingSummaryWithCategory } from '@/types/finding'
-import { useState, useCallback, useRef } from 'react'
 
 interface DateRangeFilterValue {
   from: string
@@ -52,18 +51,6 @@ const STATUS_OPTIONS: readonly { value: string; label: string }[] = [
   { value: 'Risk_Accepted', label: 'Risk Accepted' },
 ]
 
-const LANGUAGE_OPTIONS: readonly { value: string; label: string }[] = [
-  { value: 'Java', label: 'Java' },
-  { value: 'JavaScript', label: 'JavaScript' },
-  { value: 'TypeScript', label: 'TypeScript' },
-  { value: 'Python', label: 'Python' },
-  { value: 'C#', label: 'C#' },
-  { value: 'Go', label: 'Go' },
-  { value: 'Rust', label: 'Rust' },
-  { value: 'PHP', label: 'PHP' },
-  { value: 'Ruby', label: 'Ruby' },
-  { value: 'Kotlin', label: 'Kotlin' },
-]
 
 /**
  * Maps TanStack Table column filter state to backend API query parameter names.
@@ -86,10 +73,6 @@ function mapFiltersToApiParams(columnFilters: ColumnFiltersState): Record<string
       case 'status':
         params.status = filter.value as string
         break
-      case 'category_data.file_path':
-        // No direct backend param — use search as fallback
-        params.file_path = filter.value as string
-        break
       case 'category_data.rule_id':
         params.rule_id = filter.value as string
         break
@@ -98,9 +81,6 @@ function mapFiltersToApiParams(columnFilters: ColumnFiltersState): Record<string
         break
       case 'category_data.branch':
         params.branch = filter.value as string
-        break
-      case 'category_data.language':
-        params.language = filter.value as string
         break
       case 'first_seen': {
         const range = filter.value as DateRangeFilterValue | undefined
@@ -188,8 +168,7 @@ export function SastTable({
           </span>
         ),
         size: 200,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'text' },
+        enableColumnFilter: false,
       },
       {
         id: 'category_data.line_number',
@@ -245,8 +224,7 @@ export function SastTable({
             '-'
           ),
         size: 90,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'select', filterOptions: LANGUAGE_OPTIONS },
+        enableColumnFilter: false,
       },
       {
         accessorKey: 'first_seen',

@@ -62,6 +62,11 @@ const PACKAGE_TYPE_OPTIONS: readonly { value: string; label: string }[] = [
   { value: 'docker', label: 'Docker' },
 ]
 
+const HAS_FIX_OPTIONS: readonly { value: string; label: string }[] = [
+  { value: 'true', label: 'Yes' },
+  { value: 'false', label: 'No' },
+]
+
 const KNOWN_EXPLOITED_OPTIONS: readonly { value: string; label: string }[] = [
   { value: 'true', label: 'Yes' },
   { value: 'false', label: 'No' },
@@ -91,21 +96,14 @@ function mapFiltersToApiParams(columnFilters: ColumnFiltersState): Record<string
       case 'category_data.package_name':
         params.package_name = filter.value as string
         break
-      case 'category_data.package_version':
-        params.package_version = filter.value as string
-        break
       case 'category_data.fixed_version':
-        // has_fix is the backend param: if a fixed_version filter text is set, we send has_fix=true
-        params.has_fix = 'true'
+        params.has_fix = filter.value as string
         break
       case 'category_data.package_type':
         params.package_type = filter.value as string
         break
       case 'category_data.known_exploited':
         params.known_exploited = filter.value as string
-        break
-      case 'category_data.dependency_type':
-        params.dependency_type = filter.value as string
         break
       case 'first_seen': {
         const range = filter.value as DateRangeFilterValue | undefined
@@ -203,8 +201,7 @@ export function ScaTable({
           </span>
         ),
         size: 100,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'text' },
+        enableColumnFilter: false,
       },
       {
         id: 'category_data.fixed_version',
@@ -219,7 +216,7 @@ export function ScaTable({
         ),
         size: 110,
         enableColumnFilter: true,
-        meta: { filterVariant: 'text' },
+        meta: { filterVariant: 'select', filterOptions: HAS_FIX_OPTIONS },
       },
       {
         id: 'category_data.package_type',
@@ -266,8 +263,7 @@ export function ScaTable({
             '-'
           ),
         size: 110,
-        enableColumnFilter: true,
-        meta: { filterVariant: 'text' },
+        enableColumnFilter: false,
       },
       {
         accessorKey: 'first_seen',
