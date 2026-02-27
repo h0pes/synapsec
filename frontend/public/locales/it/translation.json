@@ -122,6 +122,23 @@
     "pageOf": "Pagina {{page}} di {{totalPages}}",
     "previous": "Precedente",
     "next": "Successivo",
+    "viewCards": "Schede",
+    "viewGraph": "Grafo",
+    "graphControls": {
+      "riskThreshold": "Punteggio di Rischio Minimo",
+      "categories": "Categorie",
+      "layout": "Layout",
+      "hierarchical": "Gerarchico",
+      "forceDirected": "Force-directed"
+    },
+    "findingPanel": {
+      "title": "Dettagli Risultato",
+      "severity": "Gravit\u00e0",
+      "category": "Categoria",
+      "source": "Sorgente",
+      "status": "Stato",
+      "viewFinding": "Visualizza Risultato"
+    },
     "columns": {
       "application": "Applicazione",
       "riskScore": "Punteggio di Rischio",

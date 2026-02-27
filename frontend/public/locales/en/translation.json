@@ -122,6 +122,23 @@
     "pageOf": "Page {{page}} of {{totalPages}}",
     "previous": "Previous",
     "next": "Next",
+    "viewCards": "Cards",
+    "viewGraph": "Graph",
+    "graphControls": {
+      "riskThreshold": "Min Risk Score",
+      "categories": "Categories",
+      "layout": "Layout",
+      "hierarchical": "Hierarchical",
+      "forceDirected": "Force-directed"
+    },
+    "findingPanel": {
+      "title": "Finding Details",
+      "severity": "Severity",
+      "category": "Category",
+      "source": "Source",
+      "status": "Status",
+      "viewFinding": "View Finding"
+    },
     "columns": {
       "application": "Application",
       "riskScore": "Risk Score",
