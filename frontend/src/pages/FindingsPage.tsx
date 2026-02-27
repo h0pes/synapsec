@@ -5,7 +5,7 @@ import type { SortingState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { FindingList } from '@/components/findings/FindingList'
-import { FindingFiltersPanel } from '@/components/findings/FindingFilters'
+import { FindingSearchBar } from '@/components/findings/FindingFilters'
 import { SastTable } from '@/components/findings/SastTable'
 import { ScaTable } from '@/components/findings/ScaTable'
 import { DastTable } from '@/components/findings/DastTable'
@@ -45,12 +45,13 @@ export function FindingsPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState<FindingFilters>({})
+  const [search, setSearch] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
   const [loading, setLoading] = useState(false)
   const perPage = 25
 
-  // Per-tab category filter state (column-level filters from inline table headers)
+  // Per-tab inline column filter state
+  const [allColumnFilters, setAllColumnFilters] = useState<Record<string, string>>({})
   const [sastCategoryFilters, setSastCategoryFilters] = useState<Record<string, string>>({})
   const [scaCategoryFilters, setScaCategoryFilters] = useState<Record<string, string>>({})
   const [dastCategoryFilters, setDastCategoryFilters] = useState<Record<string, string>>({})
@@ -72,15 +73,25 @@ export function FindingsPage() {
     try {
       const category = TAB_TO_CATEGORY[activeTab]
       if (activeTab === 'all') {
+        // Merge search bar + inline column filters into FindingFilters
+        const filters: FindingFilters = {
+          ...(search ? { search } : {}),
+          ...(allColumnFilters.severity ? { severity: allColumnFilters.severity as FindingFilters['severity'] } : {}),
+          ...(allColumnFilters.status ? { status: allColumnFilters.status as FindingFilters['status'] } : {}),
+          ...(allColumnFilters.category ? { category: allColumnFilters.category as FindingFilters['category'] } : {}),
+        }
         const result = await findingsApi.listFindings(filters, page, perPage)
         setFindings(result.items)
         setCategoryFindings([])
         setTotal(result.total)
         setTotalPages(result.total_pages)
       } else {
-        const categoryFilters: FindingFilters = { ...filters, category }
+        const filters: FindingFilters = {
+          category,
+          ...(search ? { search } : {}),
+        }
         const result = await findingsApi.listFindingsWithCategory(
-          categoryFilters,
+          filters,
           page,
           perPage,
           activeCategoryFilters,
@@ -95,7 +106,7 @@ export function FindingsPage() {
     } finally {
       setLoading(false)
     }
-  }, [filters, page, activeTab, activeCategoryFilters])
+  }, [search, page, activeTab, allColumnFilters, activeCategoryFilters])
 
   useEffect(() => {
     fetchFindings()
@@ -111,14 +122,19 @@ export function FindingsPage() {
     })
   }
 
-  function handleFiltersChange(newFilters: FindingFilters) {
-    setFilters(newFilters)
+  function handleSearchChange(value: string) {
+    setSearch(value)
     setPage(1)
   }
 
   function handleRowClick(id: string) {
     void navigate({ to: '/findings/$id', params: { id } })
   }
+
+  const handleAllFiltersChange = useCallback((newFilters: Record<string, string>) => {
+    setAllColumnFilters(newFilters)
+    setPage(1)
+  }, [])
 
   const handleSastFiltersChange = useCallback((newFilters: Record<string, string>) => {
     setSastCategoryFilters(newFilters)
@@ -145,14 +161,15 @@ export function FindingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="all">{t('findings.tabs.all')}</TabsTrigger>
-          <TabsTrigger value="sast">{t('findings.tabs.sast')}</TabsTrigger>
-          <TabsTrigger value="sca">{t('findings.tabs.sca')}</TabsTrigger>
-          <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
-        </TabsList>
-
-        <FindingFiltersPanel filters={filters} onChange={handleFiltersChange} hideCategory={activeTab !== 'all'} />
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="all">{t('findings.tabs.all')}</TabsTrigger>
+            <TabsTrigger value="sast">{t('findings.tabs.sast')}</TabsTrigger>
+            <TabsTrigger value="sca">{t('findings.tabs.sca')}</TabsTrigger>
+            <TabsTrigger value="dast">{t('findings.tabs.dast')}</TabsTrigger>
+          </TabsList>
+          <FindingSearchBar search={search} onSearchChange={handleSearchChange} />
+        </div>
 
         {loading ? (
           <div className="flex h-64 items-center justify-center text-muted-foreground">
@@ -163,6 +180,8 @@ export function FindingsPage() {
             <TabsContent value="all">
               <FindingList
                 findings={findings}
+                onRowClick={handleRowClick}
+                onFiltersChange={handleAllFiltersChange}
                 sorting={sorting}
                 onSortingChange={setSorting}
               />
